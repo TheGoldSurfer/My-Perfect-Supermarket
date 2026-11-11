@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/unpack-game-source.yml
+      - README.md
   workflow_dispatch:
 permissions:
   contents: write
