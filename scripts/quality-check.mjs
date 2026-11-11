@@ -22,11 +22,7 @@ function checkJavaScript(label, source, extension) {
     const result = spawnSync(process.execPath, ['--check', file], {
       encoding: 'utf8',
     });
-    assert.equal(
-      result.status,
-      0,
-      label + ' syntax check failed:\n' + (result.stderr || result.stdout || 'Unknown Node.js parse error'),
-    );
+    assert.equal(result.status, 0, label + ' syntax check failed:\n' + (result.stderr || result.stdout || 'Unknown Node.js parse error'));
     pass(label + ' JavaScript syntax');
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
@@ -34,13 +30,13 @@ function checkJavaScript(label, source, extension) {
 }
 
 function scriptTags(html) {
-  return [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)]
+  return [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
     .map((match) => ({ attrs: match[1], source: match[2] }));
 }
 
 function assertUniqueIds(label, markup) {
-  const htmlOnly = markup.replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script\\s*>/gi, '');
-  const ids = [...htmlOnly.matchAll(/\\bid=["']([^"']+)["']/gi)].map((match) => match[1]);
+  const htmlOnly = markup.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '');
+  const ids = [...htmlOnly.matchAll(/\bid=["']([^"']+)["']/gi)].map((match) => match[1]);
   const seen = new Set();
   const duplicates = new Set();
   for (const id of ids) {
@@ -53,8 +49,8 @@ function assertUniqueIds(label, markup) {
 
 function parsePage(label, html) {
   const scripts = scriptTags(html);
-  const importMaps = scripts.filter((tag) => /\\btype=["']importmap["']/i.test(tag.attrs));
-  const modules = scripts.filter((tag) => /\\btype=["']module["']/i.test(tag.attrs));
+  const importMaps = scripts.filter((tag) => /\btype=["']importmap["']/i.test(tag.attrs));
+  const modules = scripts.filter((tag) => /\btype=["']module["']/i.test(tag.attrs));
   assert.equal(importMaps.length, 1, label + ' must contain exactly one import map');
   assert.doesNotThrow(() => JSON.parse(importMaps[0].source), label + ' import map must be valid JSON');
   assert.equal(modules.length, 1, label + ' must contain exactly one game module');
@@ -62,10 +58,10 @@ function parsePage(label, html) {
   return { scripts, moduleSource: modules[0].source };
 }
 
-assert.match(indexHtml, /<div id=["']game["']><\\/div>/i, 'Root index must contain the actual game canvas host');
+assert.match(indexHtml, /<div id=["']game["']><\/div>/i, 'Root index must contain the actual game canvas host');
 assert.match(indexHtml, /id=["']stage14-stock-script["']/i, 'Root index must include the Stage 14 stock desk');
-assert.doesNotMatch(indexHtml, /document\\.write\\(html\\)/, 'Root index must not depend on dynamic whole-document rewriting');
-assert.doesNotMatch(indexHtml, /fetch\\(['"]\\.\\/game-source\\.html['"]/, 'Root index must not fetch the game at startup');
+assert.doesNotMatch(indexHtml, /document\.write\(html\)/, 'Root index must not depend on dynamic whole-document rewriting');
+assert.doesNotMatch(indexHtml, /fetch\(['"]\.\/game-source\.html['"]/, 'Root index must not fetch the game at startup');
 pass('Root index directly serves the game and stock desk');
 
 const playable = parsePage('Root index', indexHtml);
@@ -73,7 +69,7 @@ const source = parsePage('Standalone game source', gameHtml);
 assert.equal(playable.moduleSource, source.moduleSource, 'Root index and standalone game source must contain the same game module');
 pass('Published game module matches the standalone source');
 
-const stockScripts = playable.scripts.filter((tag) => /\\bid=["']stage14-stock-script["']/i.test(tag.attrs));
+const stockScripts = playable.scripts.filter((tag) => /\bid=["']stage14-stock-script["']/i.test(tag.attrs));
 assert.equal(stockScripts.length, 1, 'Root index must contain exactly one Stage 14 stock desk script');
 checkJavaScript('Stage 14 stock desk', stockScripts[0].source, 'cjs');
 
@@ -86,19 +82,19 @@ for (const method of [
   'getProducts', 'getInventory', 'getDeliveries', 'getCrates',
   'getFixtures', 'getCash', 'order', 'receive', 'adjustStock', 'setStock',
 ]) {
-  assert.match(bridge, new RegExp('\\\\b' + method + '\\\\s*:'), 'Game bridge is missing ' + method);
+  assert.match(bridge, new RegExp('\\b' + method + '\\s*:'), 'Game bridge is missing ' + method);
 }
 pass('Game-to-inventory bridge contract');
 
-assert.match(indexHtml, /window\\.MPSInventory=Object\\.freeze\\(/, 'Public inventory API is missing');
+assert.match(indexHtml, /window\.MPSInventory=Object\.freeze\(/, 'Public inventory API is missing');
 for (const method of ['getSnapshot', 'getProducts', 'getDeliveries', 'getStock', 'setStock', 'adjustStock', 'createOrder', 'receiveDelivery', 'importBackup', 'subscribe']) {
-  assert.match(indexHtml, new RegExp('\\\\b' + method + '\\\\s*:'), 'Public inventory API is missing ' + method);
+  assert.match(indexHtml, new RegExp('\\b' + method + '\\s*:'), 'Public inventory API is missing ' + method);
 }
 pass('Public MPSInventory API contract');
 
-const productsMatch = gameHtml.match(/const PRODUCTS=\\{([\\s\\S]*?)\\};\\s*function productCost/);
+const productsMatch = gameHtml.match(/const PRODUCTS=\{([\s\S]*?)\};\s*function productCost/);
 assert.ok(productsMatch, 'Game product catalogue could not be located');
-const productKeys = [...productsMatch[1].matchAll(/(?:^|,)([A-Za-z_$][\\w$]*):\\{/g)].map((match) => match[1]);
+const productKeys = [...productsMatch[1].matchAll(/(?:^|,)([A-Za-z_$][\w$]*):\{/g)].map((match) => match[1]);
 const expectedKeys = [
   'bread', 'milk', 'apples', 'drinks', 'chips', 'eggs', 'cereal', 'cheese',
   'juice', 'tomatoes', 'baguette', 'croissants', 'muffins', 'chicken', 'beef',
