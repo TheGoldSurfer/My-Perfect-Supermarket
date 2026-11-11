@@ -1,0 +1,27 @@
+name: Stage 16 stability audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stability:
+    name: Stability and performance guard checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run release quality checks
+        run: node scripts/quality-check.mjs
+      - name: Run stability and performance audit
+        run: node scripts/stability-check.mjs
