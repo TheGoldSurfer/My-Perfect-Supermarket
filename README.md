@@ -10,7 +10,16 @@ A first-person 3D supermarket simulator where you build your own shop from scrat
 4. After GitHub Pages publishes the site, open:
    https://thegoldsurfer.github.io/My-Perfect-Supermarket/
 
-The root `index.html` loader fetches the compressed game source files and starts the game. Use a modern browser with JavaScript enabled and an internet connection (the game loads Three.js from a CDN).
+The root `index.html` loader downloads the original game source files and applies the Stage 11 performance and controls update before starting the game. Use a modern browser with JavaScript enabled and an internet connection (the game loads Three.js from a CDN).
+
+## Stage 11 update
+
+- Lower default rendering cost and capped low/medium frame rates.
+- Adaptive render resolution responds to measured frame cost.
+- Reuses common geometry and materials to reduce duplicate GPU resources.
+- Reduces unnecessary raycasts, background-tab work, rain particles and customer count on low graphics.
+- CTRL unlocks the mouse; click the game canvas to lock it again.
+- Replaces the previous broken placeholder arm display with a simple first-person sleeve/hand model.
 
 ## Run locally
 
