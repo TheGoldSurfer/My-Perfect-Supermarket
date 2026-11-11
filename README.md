@@ -48,7 +48,9 @@ The root `index.html` loads 16 compressed game source parts, unpacks the complet
 - Receive deliveries to add their units to the inventory desk's stock records.
 - Shelf compatibility screen compares each product's required fixture type with its assigned fixture and flags mismatches.
 - Inventory desk records persist in the browser using local storage.
-- This management desk currently keeps its own inventory records; automatic synchronisation with the 3D shelves and the game's original stock simulation is not yet implemented.
+- Adds manual stock increases/decreases and product creation, plus JSON export/import backups.
+- Exposes `window.MPSInventory` and the `mps:inventory:changed` event as a stable integration API for game systems. Game code can read quantities and report sales/restocks through `getProducts()`, `getStock()`, `adjustStock()`, and `setStock()`.
+- The existing 3D shelves and original customer stock simulation are not yet wired to this API; automatic in-game synchronisation still requires changes to the original game code.
 
 ## Controls
 
