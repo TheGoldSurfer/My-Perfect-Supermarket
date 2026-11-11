@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Perfect Supermarket</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#101a22;color:#f5f7f8;font:16px system-ui,sans-serif}
+main{width:min(520px,calc(100% - 32px));padding:32px;border:1px solid #34434e;border-radius:18px;background:#192630;text-align:center;box-shadow:0 18px 60px #0007}
+h1{margin:0 0 12px;font-size:clamp(26px,6vw,38px)}
+p{color:#c5d0d7;line-height:1.5}
+#status{color:#9ee6c0}
+</style>
+</head>
+<body>
+<main>
+<h1>My Perfect Supermarket</h1>
+<p id="status">Loading your supermarket…</p>
+<noscript>JavaScript is required to play this game.</noscript>
+</main>
+<script>
+(async()=>{
+ const status=document.getElementById('status');
+ try{
+  if(!('DecompressionStream' in window))throw new Error('Please use a recent version of Chrome, Edge, Firefox or Safari.');
+  const names=['game-part-1.b64','game-part-2.b64','game-part-3.b64','game-part-4.b64','game-part-5.b64'];
+  const parts=await Promise.all(names.map(async name=>{
+   const response=await fetch('./'+name,{cache:'no-store'});
+   if(!response.ok)throw new Error('Could not load '+name+' (HTTP '+response.status+').');
+   return (await response.text()).trim();
+  }));
+  const binary=atob(parts.join(''));
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  const html=await new Response(stream).text();
+  document.open();document.write(html);document.close();
+ }catch(error){
+  status.textContent='The game could not start: '+(error&&error.message?error.message:String(error));
+  status.style.color='#ffb4a9';
+ }
+})();
+</script>
+</body>
+</html>
