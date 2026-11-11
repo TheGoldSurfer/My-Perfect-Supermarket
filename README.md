@@ -43,7 +43,7 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 ## Stage 14 — Live Stock, Ordering and Warehouse Management
 
 - Adds a Stock & Ordering desk accessible from the game screen.
-- Uses the game's real 21-product catalogue, product unlocks, supplier prices and cash balance.
+- Uses the game's real 22-product catalogue, product unlocks, supplier prices and cash balance.
 - Live stock overview separates warehouse quantities from units currently on shelves and shows reorder thresholds.
 - Supplier orders create real in-game deliveries; receiving early or waiting for arrival creates physical crates at the loading bay.
 - Crates can be picked up, stocked onto compatible fixtures or stored in warehouse racks using the existing 3D gameplay.
