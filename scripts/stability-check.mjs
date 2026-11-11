@@ -46,5 +46,9 @@ for (const method of ['getProducts', 'getInventory', 'getDeliveries', 'getCrates
 pass('All Stage 14 game bridge methods remain available');
 requireMatch(launcher, /window\.MPSInventory=Object\.freeze\(/, 'Stage 14 public inventory API remains present');
 requireMatch(launcher, /setInterval\(\(\)=>\{[\s\S]{0,300}sync\(/, 'Stock desk continues periodically syncing with live game state');
+requireMatch(launcher, /prior&&Number\.isFinite\(Number\(prior\.min\)\)\?Number\(prior\.min\):10/, 'A saved reorder threshold of zero is preserved after reload');
+requireMatch(game, /function ensureDeliveryId\(delivery\)/, 'Supplier delivery IDs use a collision-safe allocator');
+requireMatch(game, /deliveries\.push\(delivery\);ensureDeliveryId\(delivery\)/, 'New supplier orders receive unique delivery IDs');
+requireMatch(game, /deliveries\.forEach\(ensureDeliveryId\)/, 'Loaded or legacy deliveries are repaired to unique IDs before display');
 
 console.log('All Stage 16 stability and performance guard checks passed.');
