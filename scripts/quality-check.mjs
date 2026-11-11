@@ -15,7 +15,7 @@ function pass(message) {
 }
 
 function checkJavaScript(label, source, extension) {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mps-stage15-'));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mps-quality-'));
   const file = path.join(tempDir, 'check.' + extension);
   try {
     fs.writeFileSync(file, source, 'utf8');
@@ -34,72 +34,48 @@ function checkJavaScript(label, source, extension) {
 }
 
 function scriptTags(html) {
-  return [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
+  return [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)]
     .map((match) => ({ attrs: match[1], source: match[2] }));
 }
 
 function assertUniqueIds(label, markup) {
-  const ids = [...markup.matchAll(/\bid=["']([^"']+)["']/gi)].map((match) => match[1]);
+  const htmlOnly = markup.replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script\\s*>/gi, '');
+  const ids = [...htmlOnly.matchAll(/\\bid=["']([^"']+)["']/gi)].map((match) => match[1]);
   const seen = new Set();
   const duplicates = new Set();
   for (const id of ids) {
     if (seen.has(id)) duplicates.add(id);
     seen.add(id);
   }
-  assert.equal(
-    duplicates.size,
-    0,
-    label + ' contains duplicate IDs: ' + [...duplicates].join(', '),
-  );
+  assert.equal(duplicates.size, 0, label + ' contains duplicate IDs: ' + [...duplicates].join(', '));
   pass(label + ' HTML IDs (' + ids.length + ' unique)');
 }
 
-function extractAddonString(source) {
-  const marker = 'const stage14Addon=';
-  const markerIndex = source.indexOf(marker);
-  assert.notEqual(markerIndex, -1, 'Launcher is missing its embedded Stage 14 add-on');
-  let cursor = markerIndex + marker.length;
-  assert.equal(source[cursor], '"', 'Stage 14 add-on must remain a quoted string');
-  const start = cursor;
-  cursor += 1;
-  let escaped = false;
-  for (; cursor < source.length; cursor += 1) {
-    const char = source[cursor];
-    if (escaped) {
-      escaped = false;
-    } else if (char === '\\') {
-      escaped = true;
-    } else if (char === '"') {
-      break;
-    }
-  }
-  assert.ok(cursor < source.length, 'Stage 14 add-on string is not closed');
-  return JSON.parse(source.slice(start, cursor + 1));
+function parsePage(label, html) {
+  const scripts = scriptTags(html);
+  const importMaps = scripts.filter((tag) => /\\btype=["']importmap["']/i.test(tag.attrs));
+  const modules = scripts.filter((tag) => /\\btype=["']module["']/i.test(tag.attrs));
+  assert.equal(importMaps.length, 1, label + ' must contain exactly one import map');
+  assert.doesNotThrow(() => JSON.parse(importMaps[0].source), label + ' import map must be valid JSON');
+  assert.equal(modules.length, 1, label + ' must contain exactly one game module');
+  checkJavaScript(label + ' Three.js module', modules[0].source, 'mjs');
+  return { scripts, moduleSource: modules[0].source };
 }
 
-assert.match(indexHtml, /fetch\(['"]\.\/game-source\.html['"]/i, 'Launcher must load game-source.html');
-assert.match(indexHtml, /Loading My Perfect Supermarket/i, 'Launcher should show the Stage 15 startup copy');
-assert.match(indexHtml, /id=["']retry["']/i, 'Launcher should include a retry control');
-pass('launcher points to the standalone game source and has a retry control');
+assert.match(indexHtml, /<div id=["']game["']><\\/div>/i, 'Root index must contain the actual game canvas host');
+assert.match(indexHtml, /id=["']stage14-stock-script["']/i, 'Root index must include the Stage 14 stock desk');
+assert.doesNotMatch(indexHtml, /document\\.write\\(html\\)/, 'Root index must not depend on dynamic whole-document rewriting');
+assert.doesNotMatch(indexHtml, /fetch\\(['"]\\.\\/game-source\\.html['"]/, 'Root index must not fetch the game at startup');
+pass('Root index directly serves the game and stock desk');
 
-const launcherScripts = scriptTags(indexHtml);
-assert.equal(launcherScripts.length, 1, 'Expected one executable launcher script');
-checkJavaScript('Launcher', launcherScripts[0].source, 'cjs');
+const playable = parsePage('Root index', indexHtml);
+const source = parsePage('Standalone game source', gameHtml);
+assert.equal(playable.moduleSource, source.moduleSource, 'Root index and standalone game source must contain the same game module');
+pass('Published game module matches the standalone source');
 
-const sourceScripts = scriptTags(gameHtml);
-const importMap = sourceScripts.find((tag) => /\btype=["']importmap["']/i.test(tag.attrs));
-const gameModule = sourceScripts.filter((tag) => /\btype=["']module["']/i.test(tag.attrs));
-assert.ok(importMap, 'Game source is missing its import map');
-assert.doesNotThrow(() => JSON.parse(importMap.source), 'Game import map must be valid JSON');
-assert.equal(gameModule.length, 1, 'Expected exactly one game module script');
-pass('game import map JSON');
-
-checkJavaScript('Three.js game module', gameModule[0].source, 'mjs');
-
-const addonMarkup = extractAddonString(indexHtml);
-const addonScript = addonMarkup.match(/<script\b[^>]*id=["']stage14-stock-script["'][^>]*>([\s\S]*?)<\/script\s*>/i);
-assert.ok(addonScript, 'Embedded Stage 14 stock desk script was not found');
-checkJavaScript('Stage 14 stock desk', addonScript[1], 'cjs');
+const stockScripts = playable.scripts.filter((tag) => /\\bid=["']stage14-stock-script["']/i.test(tag.attrs));
+assert.equal(stockScripts.length, 1, 'Root index must contain exactly one Stage 14 stock desk script');
+checkJavaScript('Stage 14 stock desk', stockScripts[0].source, 'cjs');
 
 const bridgeStart = gameHtml.indexOf('window.MPSGameBridge=Object.freeze({');
 assert.notEqual(bridgeStart, -1, 'Game bridge is missing');
@@ -110,20 +86,19 @@ for (const method of [
   'getProducts', 'getInventory', 'getDeliveries', 'getCrates',
   'getFixtures', 'getCash', 'order', 'receive', 'adjustStock', 'setStock',
 ]) {
-  assert.match(bridge, new RegExp('\\b' + method + '\\s*:'), 'Game bridge is missing ' + method);
+  assert.match(bridge, new RegExp('\\\\b' + method + '\\\\s*:'), 'Game bridge is missing ' + method);
 }
-pass('game-to-inventory bridge contract');
+pass('Game-to-inventory bridge contract');
 
-assert.match(addonMarkup, /window\.MPSInventory=Object\.freeze\(/, 'Public inventory API is missing');
+assert.match(indexHtml, /window\\.MPSInventory=Object\\.freeze\\(/, 'Public inventory API is missing');
 for (const method of ['getSnapshot', 'getProducts', 'getDeliveries', 'getStock', 'setStock', 'adjustStock', 'createOrder', 'receiveDelivery', 'importBackup', 'subscribe']) {
-  assert.match(addonMarkup, new RegExp('\\b' + method + '\\s*:'), 'Public inventory API is missing ' + method);
+  assert.match(indexHtml, new RegExp('\\\\b' + method + '\\\\s*:'), 'Public inventory API is missing ' + method);
 }
-pass('public MPSInventory API contract');
+pass('Public MPSInventory API contract');
 
-const productsMatch = gameHtml.match(/const PRODUCTS=\{([\s\S]*?)\};\s*function productCost/);
+const productsMatch = gameHtml.match(/const PRODUCTS=\\{([\\s\\S]*?)\\};\\s*function productCost/);
 assert.ok(productsMatch, 'Game product catalogue could not be located');
-const productKeys = [...productsMatch[1].matchAll(/(?:^|,)([A-Za-z_$][\w$]*):\{/g)]
-  .map((match) => match[1]);
+const productKeys = [...productsMatch[1].matchAll(/(?:^|,)([A-Za-z_$][\\w$]*):\\{/g)].map((match) => match[1]);
 const expectedKeys = [
   'bread', 'milk', 'apples', 'drinks', 'chips', 'eggs', 'cereal', 'cheese',
   'juice', 'tomatoes', 'baguette', 'croissants', 'muffins', 'chicken', 'beef',
@@ -132,11 +107,9 @@ const expectedKeys = [
 assert.deepEqual(productKeys, expectedKeys, 'The live catalogue must contain the expected 22 products in order');
 pass('22-product catalogue');
 
-const firstGameScript = gameHtml.search(/<script\b/i);
-const firstLauncherScript = indexHtml.search(/<script\b/i);
-assertUniqueIds('Game page', gameHtml.slice(0, firstGameScript));
-assertUniqueIds('Launcher page', indexHtml.slice(0, firstLauncherScript));
-
+assertUniqueIds('Playable page', indexHtml);
+assertUniqueIds('Standalone game source', gameHtml);
 assert.match(readme, /Stage 15 — Final polish and release checks/i, 'README must document Stage 15');
-pass('Stage 15 documentation');
-console.log('All Stage 15 release checks passed.');
+assert.match(readme, /Stage 16 — Stability, bug and performance audit/i, 'README must document Stage 16');
+pass('Stage 15 and Stage 16 documentation');
+console.log('All game release checks passed.');
