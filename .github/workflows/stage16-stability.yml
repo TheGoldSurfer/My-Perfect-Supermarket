@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   stability:
-    name: Stability and performance guard checks
+    name: Stability and browser startup checks
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -25,3 +25,9 @@ jobs:
         run: node scripts/quality-check.mjs
       - name: Run stability and performance audit
         run: node scripts/stability-check.mjs
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+      - name: Run real-browser startup smoke test
+        run: node scripts/browser-smoke.mjs
