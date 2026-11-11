@@ -50,7 +50,7 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 - Shelf compatibility reads the actual fixtures built in the store, their assigned products, current quantities and capacities.
 - Manual stock adjustments update the real warehouse and shelf inventory; additions create physical delivery crates.
 - Delivery orders, warehouse quantities, shelf contents and store progress are saved in the game save.
-- Reorder thresholds are stored locally. Inventory snapshots can be exported to or imported from JSON.
+- Reorder thresholds are stored locally. JSON backups export product quantities and reorder thresholds; importing one restores those quantities into the live warehouse/shelf system.
 - Exposes `window.MPSInventory` with `getProducts()`, `getStock()`, `getDeliveries()`, `adjustStock()`, `setStock()`, `createOrder()`, `receiveDelivery()` and `subscribe()`. Changes emit `mps:inventory:changed`.
 - The original game source is now kept in `game-source.html`; the 16 compressed parts remain as a rollback copy.
 
