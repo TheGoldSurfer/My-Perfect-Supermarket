@@ -1,0 +1,27 @@
+name: Temporary game source unpack
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/unpack-game-source.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct source
+        shell: bash
+        run: |
+          for i in $(seq 1 16); do cat "game-part-$i.b64"; done | tr -d '\r\n ' | base64 -d | gzip -dc > game-source-inspection.html
+          test -s game-source-inspection.html
+          echo "Source bytes: $(wc -c < game-source-inspection.html)"
+      - name: Commit temporary inspection copy
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game-source-inspection.html
+          git commit -m "chore: unpack game source for Stage 14 integration"
+          git push
