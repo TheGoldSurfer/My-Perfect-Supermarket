@@ -10,7 +10,7 @@ A first-person 3D supermarket simulator where you build your own shop from scrat
 4. After GitHub Pages publishes the site, open:
    https://thegoldsurfer.github.io/My-Perfect-Supermarket/
 
-The root `index.html` loads 16 compressed game source parts and unpacks the complete game in your browser. Use a modern browser with JavaScript and gzip decompression support. The game also loads Three.js from a CDN, so an internet connection is required.
+The root `index.html` loads 16 compressed game source parts, unpacks the complete game in your browser, and adds the Stage 14 Stock & Ordering management desk. Use a modern browser with JavaScript and gzip decompression support. The game also loads Three.js from a CDN, so an internet connection is required.
 
 ## Stage 11 — Performance and controls
 
@@ -38,6 +38,17 @@ The root `index.html` loads 16 compressed game source parts and unpacks the comp
 - On-screen placement dock includes rotation, grid-size and cancel controls.
 - Build preview refreshes separately from the interaction raycast for smoother feedback.
 - Existing furniture positions and rotations remain compatible with saved games.
+
+
+## Stage 14 — Product Ordering and Inventory 2.0
+
+- Adds a Stock & Ordering desk accessible from the game screen.
+- Stock overview tracks product quantities and per-product replenishment thresholds.
+- Place supplier orders with configurable quantities and track incoming deliveries.
+- Receive deliveries to add their units to the inventory desk's stock records.
+- Shelf compatibility screen compares each product's required fixture type with its assigned fixture and flags mismatches.
+- Inventory desk records persist in the browser using local storage.
+- This management desk currently keeps its own inventory records; automatic synchronisation with the 3D shelves and the game's original stock simulation is not yet implemented.
 
 ## Controls
 
