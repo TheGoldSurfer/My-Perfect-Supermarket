@@ -458,7 +458,15 @@ window.stopShopTune=()=>{if(noteLoopTimer)clearInterval(noteLoopTimer);if(playli
 window.loadMusic=file=>{if(!file)return;if(currentAudioUrl)URL.revokeObjectURL(currentAudioUrl);if(noteLoopTimer)clearInterval(noteLoopTimer);if(playlistTimer)clearInterval(playlistTimer);noteLoopTimer=playlistTimer=null;currentAudioUrl=URL.createObjectURL(file);const audio=$('localAudio');if(!audio)return;audio.src=currentAudioUrl;audio.style.display='block';audio.play().catch(()=>toast('Press play on the audio player to start your music.'))};
 const PRODUCTS={bread:{name:'Bread',cost:48,price:6.5,color:0xc9904e},milk:{name:'Milk',cost:55,price:7.25,cold:true},apples:{name:'Apples',cost:42,price:5.75},drinks:{name:'Drinks',cost:60,price:8.5,cold:true},chips:{name:'Crisps',cost:50,price:6.25},eggs:{name:'Eggs',cost:58,price:7.75,cold:true},cereal:{name:'Cereal',cost:66,price:8.25},cheese:{name:'Cheese',cost:68,price:8.75,cold:true},juice:{name:'Juice',cost:61,price:8,cold:true},tomatoes:{name:'Tomatoes',cost:45,price:6},baguette:{name:'Baguette',cost:54,price:7.5,department:'bakery',unlock:2},croissants:{name:'Croissants',cost:72,price:10.5,department:'bakery',unlock:2},muffins:{name:'Muffins',cost:76,price:11,department:'bakery',unlock:2},chicken:{name:'Fresh chicken',cost:110,price:15.5,department:'butcher',unlock:4},beef:{name:'Beef cuts',cost:145,price:19.5,department:'butcher',unlock:4},sausages:{name:'Sausages',cost:98,price:14,department:'butcher',unlock:4},roses:{name:'Rose bunch',cost:85,price:13,department:'flower',unlock:5},bouquet:{name:'Mixed bouquet',cost:125,price:19,department:'flower',unlock:5},teddy:{name:'Teddy bear',cost:95,price:15,department:'toy',unlock:6},toyCar:{name:'Toy car',cost:78,price:12,department:'toy',unlock:6},headphones:{name:'Headphones',cost:210,price:32,department:'electronics',unlock:7},charger:{name:'Phone charger',cost:120,price:19,department:'electronics',unlock:7}};
 function productCost(k){return PRODUCTS[k]?.cost??50}
-function orderProduct(k){const product=PRODUCTS[k];if(!product)return;if(!productUnlocked(k)){toast(`${product.name} unlocks at store level ${product.unlock}.`);return}if(cash<product.cost){toast('Not enough money to order that box.');return}cash-=product.cost;dailyStats.expenses+=product.cost;deliveries.push({product:k,name:product.name,qty:12,left:5,_mpsId:Date.now()+Math.floor(Math.random()*1000)});updateHud();saveGame(false);toast(`${product.name} ordered. Delivery arriving in 5 seconds.`);if(!$('panel').classList.contains('hidden')){if($('panel').innerHTML.includes('phoneContent'))window.showPhoneTab('delivery');else openPanel('order')}}
+function ensureDeliveryId(delivery){
+ const current=Number(delivery._mpsId);
+ if(Number.isSafeInteger(current)&&current>0&&!deliveries.some(other=>other!==delivery&&Number(other._mpsId)===current))return current;
+ let next=Math.max(1,Date.now());
+ while(deliveries.some(other=>other!==delivery&&Number(other._mpsId)===next))next++;
+ delivery._mpsId=next;
+ return next;
+}
+function orderProduct(k){const product=PRODUCTS[k];if(!product)return;if(!productUnlocked(k)){toast(`${product.name} unlocks at store level ${product.unlock}.`);return}if(cash<product.cost){toast('Not enough money to order that box.');return}cash-=product.cost;dailyStats.expenses+=product.cost;const delivery={product:k,name:product.name,qty:12,left:5};deliveries.push(delivery);ensureDeliveryId(delivery);updateHud();saveGame(false);toast(`${product.name} ordered. Delivery arriving in 5 seconds.`);if(!$('panel').classList.contains('hidden')){if($('panel').innerHTML.includes('phoneContent'))window.showPhoneTab('delivery');else openPanel('order')}}
 function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600)}
 function recordCustomerLoss(customer,reason='queue wait'){
  const d=customer?.userData;if(!d||d.lossRecorded)return;d.lossRecorded=true;dailyStats.lost++;reputation=Math.max(1,reputation-.055);toast(d.profileName+' left because of '+reason+'.');updateHud();
@@ -601,7 +609,7 @@ window.MPSGameBridge=Object.freeze({
   return {warehouse,shelf,onHand:warehouse+shelf,incoming,shelfCount:shelves.length};
  },
  getDeliveries:()=>{
-  deliveries.forEach(d=>{if(!d._mpsId)d._mpsId=Date.now()+Math.floor(Math.random()*100000)});
+  deliveries.forEach(ensureDeliveryId);
   return deliveries.map(d=>({id:d._mpsId,product:d.product,name:d.name,qty:d.qty,left:d.left}));
  },
  getCrates:()=>stockBoxes.filter(c=>c.parent===scene&&c.visible).map(c=>({product:c.userData.product,name:PRODUCTS[c.userData.product]?.name||c.userData.product,qty:c.userData.qty})),
