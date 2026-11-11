@@ -10,14 +10,14 @@ A first-person 3D supermarket simulator where you build your own shop from scrat
 4. After GitHub Pages publishes the site, open:
    https://thegoldsurfer.github.io/My-Perfect-Supermarket/
 
-The root `index.html` loads the compressed game source parts and applies the performance, menu and building-system updates before starting the game. Use a modern browser with JavaScript enabled and an internet connection (the game loads Three.js from a CDN).
+The root `index.html` loads 16 compressed game source parts and unpacks the complete game in your browser. Use a modern browser with JavaScript and gzip decompression support. The game also loads Three.js from a CDN, so an internet connection is required.
 
 ## Stage 11 — Performance and controls
 
 - Lower default rendering cost, adaptive resolution and reduced background work.
 - Reuses common 3D geometry and materials.
 - CTRL unlocks the mouse; click the game view to lock it again.
-- Improved first-person sleeves and hands.
+- Replaces the previous placeholder arms with a simple first-person sleeve/hand view model.
 
 ## Stage 12 — Menu and phone interface
 
@@ -66,4 +66,4 @@ The root `index.html` loads the compressed game source parts and applies the per
 - ShopTune is not connected to Spotify's catalogue.
 - Saves are local to the same browser and device unless exported and imported as a JSON backup.
 - The 3D engine loads from jsDelivr, so an internet connection is required when the game starts.
-- Static JavaScript syntax, HTML parsing, duplicate-ID and ZIP integrity checks passed for Stage 13. Live gameplay testing still needs to be performed on the target device.
+- JavaScript syntax, HTML parsing, duplicate-ID and ZIP integrity checks passed for Stage 13. Live gameplay testing still needs to be performed on the target device.
