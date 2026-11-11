@@ -77,6 +77,9 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 - Adds a second automated audit for performance safeguards, frame-time clamping, background-tab behavior, paused simulation, adaptive resolution and quality-based frame caps.
 - Checks that raycasts and build previews remain throttled and shared geometry/material caches are retained.
 - Checks that save persistence and the live Stage 14 inventory bridge remain connected.
+- Fixes a reorder-threshold persistence bug so a saved threshold of `0` stays `0` after reloading.
+- Makes supplier delivery IDs collision-safe and repairs duplicate or missing IDs from older saves before the delivery desk uses them.
+- Fixes warehouse rack visual cleanup so shared Three.js geometry and materials are not disposed while other objects still use them.
 - Adds a GitHub Actions workflow that runs both the Stage 15 release checks and Stage 16 stability checks on pushes, pull requests and manual dispatch.
 - These are static regression guards. They do not measure real FPS or replace browser/device testing.
 
