@@ -267,7 +267,7 @@ function createShelf(x,y,z,rot=0,kind='shelf'){
 }
 function addInteractable(g){worldObjects.push(g);return g}
 function createBoxCrate(x,z,product,qty,floorY=0){const g=new THREE.Group();g.position.set(x,floorY+.55,z);scene.add(g);box(g,0,0,0,.95,1.05,.85,mat(0xb98b5a));box(g,0,.54,0,.96,.06,.86,mat(0xd2ac7f));const stripe=box(g,0,.58,.44,.52,.12,.025,mat(0x7d5639));const label=box(g,0,.78,.44,.55,.2,.025,mat(0xf1eadf));g.userData={kind:'crate',product,qty,label:`${qty} ${PRODUCTS[product]?.name||product} box`};stockBoxes.push(g);worldObjects.push(g);return g}
-function clearRackVisuals(rack){for(const child of [...rack.children])if(child.userData.rackVisual){rack.remove(child);child.geometry?.dispose?.();if(child.material?.dispose)child.material.dispose()}}
+function clearRackVisuals(rack){for(const child of [...rack.children])if(child.userData.rackVisual){rack.remove(child);disposeDynamicTree(child)}}
 function drawRackVisuals(rack){clearRackVisuals(rack);const boxes=rack.userData.storedBoxes||[];boxes.slice(0,8).forEach((entry,i)=>{const level=Math.floor(i/3),side=i%3,x=[-.62,0,.62][side],y=[.72,1.62,2.52][level]||2.52;const crate=box(rack,x,y,.03,.54,.48,.56,mat(0xb98b5a));crate.userData.rackVisual=true;const band=box(rack,x,y+.25,.315,.54,.045,.025,mat(0xd2ac7f));band.userData.rackVisual=true;});}
 function removeCrateObject(crate){if(!crate)return;scene.remove(crate);disposeDynamicTree(crate);crate.visible=false;const wi=worldObjects.indexOf(crate);if(wi>=0)worldObjects.splice(wi,1);const bi=stockBoxes.indexOf(crate);if(bi>=0)stockBoxes.splice(bi,1);}
 
