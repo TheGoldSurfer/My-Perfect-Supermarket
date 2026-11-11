@@ -791,9 +791,7 @@ window.dispatchEvent(new Event('mps-game:ready'));
     html+='</tbody></table><p class="s14-sub">Counts are read from real game shelves, warehouse stock and supplier orders. Reorder thresholds are saved on this device.</p>';
    }else if(active==='order'){
     html+='<div class="s14-card"><b>Place a supplier order</b><p class="s14-sub">Each box contains 12 units. The game checks unlocks and cash, charges its real supplier price and sends crates to the loading bay.</p><div class="s14-row"><select id="s14-product">';
-    state.products.forEach(p=>{html+='<option value="'+p.id+'" '+(p.unlocked?'':'disabled')+'>'+esc(p.name)+' · '+(p.unlocked?'
-</html>
-+p.cost+' per box':'Locked')+'</option>'});
+    state.products.forEach(p=>{html+='<option value="'+p.id+'" '+(p.unlocked?'':'disabled')+'>'+esc(p.name)+' · '+(p.unlocked?'$'+p.cost+' per box':'Locked')+'</option>'});
     html+='</select><input id="s14-qty" type="number" min="1" max="10" value="1" aria-label="Number of boxes"><button class="s14-btn primary" id="s14-place">Place order</button></div><div class="s14-sub" id="s14-order-message" aria-live="polite" style="margin-top:8px"></div></div><table class="s14-table"><thead><tr><th>Product</th><th>On hand</th><th>Reorder at</th><th>Suggested boxes</th></tr></thead><tbody>';
     state.products.filter(p=>p.stock<=p.min&&p.unlocked).forEach(p=>{html+='<tr><td>'+esc(p.name)+'</td><td>'+p.stock+'</td><td>'+p.min+'</td><td>'+Math.max(1,Math.ceil((p.min*2-p.stock)/12))+'</td></tr>'});
     html+='</tbody></table>';
