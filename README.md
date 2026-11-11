@@ -10,30 +10,46 @@ A first-person 3D supermarket simulator where you build your own shop from scrat
 4. After GitHub Pages publishes the site, open:
    https://thegoldsurfer.github.io/My-Perfect-Supermarket/
 
-The root `index.html` loader downloads the original game source files and applies the Stage 11 performance and controls update before starting the game. Use a modern browser with JavaScript enabled and an internet connection (the game loads Three.js from a CDN).
+The root `index.html` loads the compressed game source parts and applies the latest interface update before starting the game. Use a modern browser with JavaScript enabled and an internet connection (the game loads Three.js from a CDN).
 
-## Stage 11 update
+## Stage 12 — Interface redesign
 
-- Lower default rendering cost and capped low/medium frame rates.
-- Adaptive render resolution responds to measured frame cost.
-- Reuses common geometry and materials to reduce duplicate GPU resources.
-- Reduces unnecessary raycasts, background-tab work, rain particles and customer count on low graphics.
-- CTRL unlocks the mouse; click the game canvas to lock it again.
-- Replaces the previous broken placeholder arm display with a simple first-person sleeve/hand model.
+- Reworked the title, pause, management and phone screens into a consistent dark navy-blue interface.
+- Updated panels, feature tiles, forms, progress bars, action buttons and phone apps to match.
+- Added a dedicated **PHONE** button to the visible in-game toolbar. The phone can also be opened with **P**.
+- The toolbar is focused on **Menu, Build, Phone, Interact and Pause**. The alarm appears only during an active security incident.
+- Added a search field to the supermarket dashboard to find menus such as build, orders, staff, upgrades, security and save management.
+- Management menus pause the simulation while open, and the simulation resumes when they close.
+- Shelf, warehouse and checkout management screens also pause the simulation.
+- Improved keyboard focus outlines, button states and mobile layout.
 
-## Run locally
+## Controls
 
-From the repository folder, run:
+- Click **Start Game** / **Continue Game** to begin.
+- WASD: walk; mouse: look; Space: jump; Shift: sprint.
+- **CTRL**: unlock mouse; click the game view to lock it again.
+- **E**: interact; **B**: build; **R**: rotate the selected fixture; **V**: toggle grid/free placement.
+- **PHONE** button or **P**: open the owner phone.
+- **MENU**: open the supermarket dashboard. Search for a feature and select its own screen.
+- **Esc** or **PAUSE**: pause the simulation.
+- **F1**: open help.
+- On touch screens, use the on-screen movement buttons; desktop mouse look is recommended.
 
-```bash
-python -m http.server 8000
-```
+## Included gameplay systems
 
-Then open http://localhost:8000/ in your browser.
+- First-person supermarket with buildable shelves, fridges, checkouts, warehouse racks and specialist displays.
+- Product ordering, five-second deliveries, storage and shelf stocking.
+- Grocery, chilled, bakery, butcher, flower, toy and electronics departments.
+- Customer shopping, shopper profiles, patience, checkout queues, cash/card payments and manual bagging.
+- 07:00–23:00 opening hours, accelerated closed hours, weather, rush-hour traffic and reports.
+- Store XP, staff, upgrades, security incidents and building expansions.
+- QuickCart, ShopTune and character profile apps.
+- Autosave plus manual save, import and export.
 
-## Notes
+## Limitations
 
-- This is a single-player browser prototype.
-- Online multiplayer is not implemented.
+- This is a **single-player browser prototype**. Online multiplayer/shared shops are not implemented.
 - ShopTune is not connected to Spotify's catalogue.
-- Save data is stored in browser local storage. Use the in-game Save & Backup menu to export a backup before clearing browser data.
+- Saves are local to the same browser and device unless exported and imported as a JSON backup.
+- The 3D engine loads from jsDelivr, so an internet connection is required when the game starts.
+- Static JavaScript syntax, HTML parsing, duplicate-ID and ZIP integrity checks passed for the Stage 12 download. A live gameplay playtest still needs to be performed on the target device.
