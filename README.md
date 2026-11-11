@@ -10,30 +10,44 @@ A first-person 3D supermarket simulator where you build your own shop from scrat
 4. After GitHub Pages publishes the site, open:
    https://thegoldsurfer.github.io/My-Perfect-Supermarket/
 
-The root `index.html` loads the compressed game source parts and applies the latest interface update before starting the game. Use a modern browser with JavaScript enabled and an internet connection (the game loads Three.js from a CDN).
+The root `index.html` loads the compressed game source parts and applies the performance, menu and building-system updates before starting the game. Use a modern browser with JavaScript enabled and an internet connection (the game loads Three.js from a CDN).
 
-## Stage 12 — Interface redesign
+## Stage 11 — Performance and controls
 
-- Reworked the title, pause, management and phone screens into a consistent dark navy-blue interface.
-- Updated panels, feature tiles, forms, progress bars, action buttons and phone apps to match.
-- Added a dedicated **PHONE** button to the visible in-game toolbar. The phone can also be opened with **P**.
-- The toolbar is focused on **Menu, Build, Phone, Interact and Pause**. The alarm appears only during an active security incident.
-- Added a search field to the supermarket dashboard to find menus such as build, orders, staff, upgrades, security and save management.
-- Management menus pause the simulation while open, and the simulation resumes when they close.
-- Shelf, warehouse and checkout management screens also pause the simulation.
-- Improved keyboard focus outlines, button states and mobile layout.
+- Lower default rendering cost, adaptive resolution and reduced background work.
+- Reuses common 3D geometry and materials.
+- CTRL unlocks the mouse; click the game view to lock it again.
+- Improved first-person sleeves and hands.
+
+## Stage 12 — Menu and phone interface
+
+- Dark navy-blue management menus and separate screens for shop systems.
+- Dedicated PHONE button plus the P keyboard shortcut.
+- Search field in the dashboard.
+- Menus pause the simulation while open.
+- Updated mobile layout and keyboard navigation.
+
+## Stage 13 — Building System 2.0
+
+- Live furniture preview follows the centre of the screen.
+- Green footprint means placement is valid; red means the spot is blocked.
+- Rotated-rectangle collision checks reduce overlap between furniture.
+- Placement checks shop boundaries and keeps the front entrance clear.
+- Grid spacing options: 0.25 m, 0.5 m and 1 m, plus free placement.
+- Q / E rotates in 15° increments; R rotates 90°; V toggles grid / free placement.
+- On-screen placement dock includes rotation, grid-size and cancel controls.
+- Build preview refreshes separately from the interaction raycast for smoother feedback.
+- Existing furniture positions and rotations remain compatible with saved games.
 
 ## Controls
 
-- Click **Start Game** / **Continue Game** to begin.
 - WASD: walk; mouse: look; Space: jump; Shift: sprint.
-- **CTRL**: unlock mouse; click the game view to lock it again.
-- **E**: interact; **B**: build; **R**: rotate the selected fixture; **V**: toggle grid/free placement.
-- **PHONE** button or **P**: open the owner phone.
-- **MENU**: open the supermarket dashboard. Search for a feature and select its own screen.
-- **Esc** or **PAUSE**: pause the simulation.
-- **F1**: open help.
-- On touch screens, use the on-screen movement buttons; desktop mouse look is recommended.
+- CTRL: unlock the mouse; click the game view to lock it again.
+- E: interact; B: enter/exit build mode; P: open the phone.
+- While building: Q / E rotate 15°, R rotates 90°, V toggles grid/free placement.
+- Click the scene to place a fixture when the footprint preview is green.
+- Use the placement dock to rotate, change grid spacing or cancel build mode.
+- MENU: open the management dashboard; Esc: pause; F1: help.
 
 ## Included gameplay systems
 
@@ -52,4 +66,4 @@ The root `index.html` loads the compressed game source parts and applies the lat
 - ShopTune is not connected to Spotify's catalogue.
 - Saves are local to the same browser and device unless exported and imported as a JSON backup.
 - The 3D engine loads from jsDelivr, so an internet connection is required when the game starts.
-- Static JavaScript syntax, HTML parsing, duplicate-ID and ZIP integrity checks passed for the Stage 12 download. A live gameplay playtest still needs to be performed on the target device.
+- Static JavaScript syntax, HTML parsing, duplicate-ID and ZIP integrity checks passed for Stage 13. Live gameplay testing still needs to be performed on the target device.
