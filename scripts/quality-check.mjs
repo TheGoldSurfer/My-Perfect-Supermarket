@@ -34,12 +34,12 @@ function checkJavaScript(label, source, extension) {
 }
 
 function scriptTags(html) {
-  return [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)]
+  return [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
     .map((match) => ({ attrs: match[1], source: match[2] }));
 }
 
 function assertUniqueIds(label, markup) {
-  const ids = [...markup.matchAll(/\\bid=["']([^"']+)["']/gi)].map((match) => match[1]);
+  const ids = [...markup.matchAll(/\bid=["']([^"']+)["']/gi)].map((match) => match[1]);
   const seen = new Set();
   const duplicates = new Set();
   for (const id of ids) {
@@ -67,7 +67,7 @@ function extractAddonString(source) {
     const char = source[cursor];
     if (escaped) {
       escaped = false;
-    } else if (char === '\\\\') {
+    } else if (char === '\\') {
       escaped = true;
     } else if (char === '"') {
       break;
@@ -77,7 +77,7 @@ function extractAddonString(source) {
   return JSON.parse(source.slice(start, cursor + 1));
 }
 
-assert.match(indexHtml, /fetch\\(['"]\\.\\/game-source\\.html['"]/i, 'Launcher must load game-source.html');
+assert.match(indexHtml, /fetch\(['"]\.\/game-source\.html['"]/i, 'Launcher must load game-source.html');
 assert.match(indexHtml, /Loading My Perfect Supermarket/i, 'Launcher should show the Stage 15 startup copy');
 assert.match(indexHtml, /id=["']retry["']/i, 'Launcher should include a retry control');
 pass('launcher points to the standalone game source and has a retry control');
@@ -87,8 +87,8 @@ assert.equal(launcherScripts.length, 1, 'Expected one executable launcher script
 checkJavaScript('Launcher', launcherScripts[0].source, 'cjs');
 
 const sourceScripts = scriptTags(gameHtml);
-const importMap = sourceScripts.find((tag) => /\\btype=["']importmap["']/i.test(tag.attrs));
-const gameModule = sourceScripts.filter((tag) => /\\btype=["']module["']/i.test(tag.attrs));
+const importMap = sourceScripts.find((tag) => /\btype=["']importmap["']/i.test(tag.attrs));
+const gameModule = sourceScripts.filter((tag) => /\btype=["']module["']/i.test(tag.attrs));
 assert.ok(importMap, 'Game source is missing its import map');
 assert.doesNotThrow(() => JSON.parse(importMap.source), 'Game import map must be valid JSON');
 assert.equal(gameModule.length, 1, 'Expected exactly one game module script');
@@ -97,32 +97,32 @@ pass('game import map JSON');
 checkJavaScript('Three.js game module', gameModule[0].source, 'mjs');
 
 const addonMarkup = extractAddonString(indexHtml);
-const addonScript = addonMarkup.match(/<script\\b[^>]*id=["']stage14-stock-script["'][^>]*>([\\s\\S]*?)<\\/script\\s*>/i);
+const addonScript = addonMarkup.match(/<script\b[^>]*id=["']stage14-stock-script["'][^>]*>([\s\S]*?)<\/script\s*>/i);
 assert.ok(addonScript, 'Embedded Stage 14 stock desk script was not found');
 checkJavaScript('Stage 14 stock desk', addonScript[1], 'cjs');
 
 const bridgeStart = gameHtml.indexOf('window.MPSGameBridge=Object.freeze({');
 assert.notEqual(bridgeStart, -1, 'Game bridge is missing');
-const bridgeEnd = gameHtml.indexOf('window.dispatchEvent(new Event(\'mps-game:ready\'))', bridgeStart);
+const bridgeEnd = gameHtml.indexOf("window.dispatchEvent(new Event('mps-game:ready'))", bridgeStart);
 assert.ok(bridgeEnd > bridgeStart, 'Game bridge ready event is missing');
 const bridge = gameHtml.slice(bridgeStart, bridgeEnd);
 for (const method of [
   'getProducts', 'getInventory', 'getDeliveries', 'getCrates',
   'getFixtures', 'getCash', 'order', 'receive', 'adjustStock', 'setStock',
 ]) {
-  assert.match(bridge, new RegExp('\\\\b' + method + '\\\\s*:'), 'Game bridge is missing ' + method);
+  assert.match(bridge, new RegExp('\\b' + method + '\\s*:'), 'Game bridge is missing ' + method);
 }
 pass('game-to-inventory bridge contract');
 
-assert.match(addonMarkup, /window\\.MPSInventory=Object\\.freeze\\(/, 'Public inventory API is missing');
+assert.match(addonMarkup, /window\.MPSInventory=Object\.freeze\(/, 'Public inventory API is missing');
 for (const method of ['getSnapshot', 'getProducts', 'getDeliveries', 'getStock', 'setStock', 'adjustStock', 'createOrder', 'receiveDelivery', 'importBackup', 'subscribe']) {
-  assert.match(addonMarkup, new RegExp('\\\\b' + method + '\\\\s*:'), 'Public inventory API is missing ' + method);
+  assert.match(addonMarkup, new RegExp('\\b' + method + '\\s*:'), 'Public inventory API is missing ' + method);
 }
 pass('public MPSInventory API contract');
 
-const productsMatch = gameHtml.match(/const PRODUCTS=\\{([\\s\\S]*?)\\};\\s*function productCost/);
+const productsMatch = gameHtml.match(/const PRODUCTS=\{([\s\S]*?)\};\s*function productCost/);
 assert.ok(productsMatch, 'Game product catalogue could not be located');
-const productKeys = [...productsMatch[1].matchAll(/(?:^|,)([A-Za-z_$][\\w$]*):\\{/g)]
+const productKeys = [...productsMatch[1].matchAll(/(?:^|,)([A-Za-z_$][\w$]*):\{/g)]
   .map((match) => match[1]);
 const expectedKeys = [
   'bread', 'milk', 'apples', 'drinks', 'chips', 'eggs', 'cereal', 'cheese',
@@ -132,10 +132,10 @@ const expectedKeys = [
 assert.deepEqual(productKeys, expectedKeys, 'The live catalogue must contain the expected 22 products in order');
 pass('22-product catalogue');
 
-const gameMarkup = gameHtml.slice(0, gameHtml.search(/<script\\b/i));
-const launcherMarkup = indexHtml.slice(0, indexHtml.search(/<script\\b/i));
-assertUniqueIds('Game page', gameMarkup);
-assertUniqueIds('Launcher page', launcherMarkup);
+const firstGameScript = gameHtml.search(/<script\b/i);
+const firstLauncherScript = indexHtml.search(/<script\b/i);
+assertUniqueIds('Game page', gameHtml.slice(0, firstGameScript));
+assertUniqueIds('Launcher page', indexHtml.slice(0, firstLauncherScript));
 
 assert.match(readme, /Stage 15 — Final polish and release checks/i, 'README must document Stage 15');
 pass('Stage 15 documentation');
