@@ -638,6 +638,12 @@ window.MPSGameBridge=Object.freeze({
    if(warehouseTake>0){
     stock[key]=Math.max(0,info.warehouse-warehouseTake);remaining-=warehouseTake;
     let physical=warehouseTake;
+    if(heldBox&&heldBox.userData.product===key&&physical>0){
+     const take=Math.min(physical,Math.max(0,Number(heldBox.userData.qty)||0));
+     heldBox.userData.qty-=take;physical-=take;
+     heldBox.userData.label=heldBox.userData.qty+' '+(PRODUCTS[key]?.name||key)+' box';
+     if(heldBox.userData.qty<=0){removeCrateObject(heldBox);heldBox=null;stockingTask=null}
+    }
     for(const crate of stockBoxes.filter(c=>c.userData.product===key&&c.parent===scene&&c.visible)){
      if(physical<=0)break;
      const take=Math.min(physical,Math.max(0,Number(crate.userData.qty)||0));
