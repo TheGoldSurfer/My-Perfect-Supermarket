@@ -72,6 +72,24 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 6. Save, reload the page and confirm cash, stock, shelf contents, fixtures and active deliveries persist.
 7. Repeat the essential controls and management screens at a narrow mobile viewport.
 
+## Stage 16 — Stability, bug and performance audit (in progress)
+
+- Adds a second automated audit for performance safeguards, frame-time clamping, background-tab behavior, paused simulation, adaptive resolution and quality-based frame caps.
+- Checks that raycasts and build previews remain throttled and shared geometry/material caches are retained.
+- Checks that save persistence and the live Stage 14 inventory bridge remain connected.
+- Adds a GitHub Actions workflow that runs both the Stage 15 release checks and Stage 16 stability checks on pushes, pull requests and manual dispatch.
+- These are static regression guards. They do not measure real FPS or replace browser/device testing.
+
+### Stage 16 manual stability pass
+
+1. Test a fresh save and an existing save; check that both reach the game without console errors.
+2. Play for at least 10 minutes with a busy store, several staff members and multiple shelves.
+3. Watch for frame-rate drops while walking, turning, opening management screens and using build mode.
+4. Switch browser tabs and return; confirm the game resumes without a large time jump.
+5. Pause and resume; confirm customers and deliveries stop while paused and continue afterward.
+6. Place orders, receive crates, stock shelves, save, reload and compare warehouse and shelf counts.
+7. Repeat on a narrow mobile viewport and at each available graphics-quality setting.
+
 ## Controls
 
 - WASD: walk; mouse: look; Space: jump; Shift: sprint.
