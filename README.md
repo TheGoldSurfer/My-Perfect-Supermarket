@@ -10,7 +10,7 @@ A first-person 3D supermarket simulator where you build your own shop from scrat
 4. After GitHub Pages publishes the site, open:
    https://thegoldsurfer.github.io/My-Perfect-Supermarket/
 
-The root `index.html` loads the standalone `game-source.html` game build and adds the Stage 14 Stock & Ordering management desk. The original compressed source parts are retained in the repository as a rollback copy. Use a modern browser with JavaScript. The game loads Three.js from a CDN, so an internet connection is required.
+The root `index.html` is the playable page and contains the game plus the Stage 14 Stock & Ordering desk directly, so the browser does not need a separate startup fetch or whole-page rewrite. `game-source.html` is kept as the standalone game-source reference and is checked against the published game module. The original compressed source parts are retained as a rollback copy. Use a modern browser with JavaScript and an internet connection: Three.js and its pointer-lock controls load from jsDelivr.
 
 ## Stage 11 — Performance and controls
 
@@ -56,10 +56,10 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 
 ## Stage 15 — Final polish and release checks (in progress)
 
-- Adds a dependency-free Node.js quality check for the launcher, Three.js game module and embedded Stock & Ordering script.
+- Adds a dependency-free Node.js quality check for the playable page, Three.js game module and Stock & Ordering script.
 - Verifies the game's import map, live game/inventory bridge, public inventory API, exact 22-product catalogue and duplicate IDs in the page markup.
 - Adds a GitHub Actions quality workflow that runs the checks on pushes to `main`, pull requests targeting `main` and manual workflow dispatch.
-- Improves the startup screen and adds a retry control when the game source fails to load.
+- Serves the game directly from the root page instead of fetching a second HTML file and rewriting the document during startup.
 - A real browser play-through and device-specific checks are still required before calling the final release verified.
 
 ### Manual release smoke test
@@ -80,8 +80,8 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 - Fixes a reorder-threshold persistence bug so a saved threshold of `0` stays `0` after reloading.
 - Makes supplier delivery IDs collision-safe and repairs duplicate or missing IDs from older saves before the delivery desk uses them.
 - Fixes warehouse rack visual cleanup so shared Three.js geometry and materials are not disposed while other objects still use them.
-- Adds a GitHub Actions workflow that runs both the Stage 15 release checks and Stage 16 stability checks on pushes, pull requests and manual dispatch.
-- These are static regression guards. They do not measure real FPS or replace browser/device testing.
+- Adds a GitHub Actions workflow that runs Stage 15 checks, Stage 16 regression guards and a headless Chromium startup test on pushes, pull requests and manual dispatch.
+- The Chromium smoke test checks that the page returns successfully, the 3D canvas and main menu appear, and the 22-product inventory bridge initializes. It is a startup check, not a full play-through or a real-device FPS benchmark.
 
 ### Stage 16 manual stability pass
 
@@ -120,5 +120,5 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 - ShopTune is not connected to Spotify's catalogue.
 - Saves are local to the same browser and device unless exported and imported as a JSON backup.
 - The 3D engine loads from jsDelivr, so an internet connection is required when the game starts.
-- The Stage 15 quality workflow checks JavaScript syntax, the import map, inventory integration contracts, the 22-product catalogue and duplicate IDs. These are static checks, not a substitute for a browser play-through.
+- The Stage 15 and Stage 16 workflows include static code checks and a headless Chromium startup test. They do not guarantee performance on every real device or replace the manual gameplay checklist.
 - Live gameplay, WebGL/CDN loading, pointer lock, mobile controls and full save/load behavior still need manual verification on target devices.
