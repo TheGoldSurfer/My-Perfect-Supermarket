@@ -8,38 +8,59 @@
 :root{color-scheme:dark}*{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:grid;place-items:center;background:#101a22;color:#f5f7f8;font:16px system-ui,sans-serif}
 main{width:min(520px,calc(100% - 32px));padding:32px;border:1px solid #34434e;border-radius:18px;background:#192630;text-align:center;box-shadow:0 18px 60px #0007}
-h1{margin:0 0 12px;font-size:clamp(26px,6vw,38px)}
-p{color:#c5d0d7;line-height:1.5}
-#status{color:#9ee6c0}
+h1{margin:0 0 12px;font-size:clamp(26px,6vw,38px)}p{color:#c5d0d7;line-height:1.5}#status{color:#9ee6c0}
 </style>
 </head>
 <body>
-<main>
-<h1>My Perfect Supermarket</h1>
-<p id="status">Loading your supermarket…</p>
-<noscript>JavaScript is required to play this game.</noscript>
-</main>
+<main><h1>My Perfect Supermarket</h1><p id="status">Loading Stage 11 performance update…</p><noscript>JavaScript is required to play this game.</noscript></main>
 <script>
 (async()=>{
  const status=document.getElementById('status');
  try{
   if(!('DecompressionStream' in window))throw new Error('Please use a recent version of Chrome, Edge, Firefox or Safari.');
   const names=['game-part-1.b64','game-part-2.b64','game-part-3.b64','game-part-4.b64','game-part-5.b64'];
-  const parts=await Promise.all(names.map(async name=>{
-   const response=await fetch('./'+name,{cache:'no-store'});
-   if(!response.ok)throw new Error('Could not load '+name+' (HTTP '+response.status+').');
-   return (await response.text()).trim();
-  }));
-  const binary=atob(parts.join(''));
-  const bytes=new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  const parts=await Promise.all(names.map(async name=>{const response=await fetch('./'+name,{cache:'no-store'});if(!response.ok)throw new Error('Could not load '+name+' (HTTP '+response.status+').');return (await response.text()).trim()}));
+  const binary=atob(parts.join(''));const bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
   const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-  const html=await new Response(stream).text();
+  let html=await new Response(stream).text();
+  const replaceOnce=(before,after,label)=>{if(!html.includes(before))throw new Error('Stage 11 patch mismatch: '+label);html=html.replace(before,after)};
+  replaceOnce("const mat=(color,rough=.78,metal=0)=>new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});","const sharedMaterials=new Set(),sharedGeometries=new Set(),materialCache=new Map(),geometryCache=new Map();\nfunction mat(color,rough=.78,metal=0){const key=[color,rough,metal].join('|');let m=materialCache.get(key);if(!m){m=new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});materialCache.set(key,m);sharedMaterials.add(m)}return m}\nfunction cachedGeometry(key,make){let g=geometryCache.get(key);if(!g){g=make();geometryCache.set(key,g);sharedGeometries.add(g)}return g}\nconst boxGeometry=(x,y,z)=>cachedGeometry('box:'+x+'|'+y+'|'+z,()=>new THREE.BoxGeometry(x,y,z));\nconst cylinderGeometry=(a,b,h,n=16)=>cachedGeometry('cylinder:'+a+'|'+b+'|'+h+'|'+n,()=>new THREE.CylinderGeometry(a,b,h,n));\nconst sphereGeometry=(r,w=16,h=12)=>cachedGeometry('sphere:'+r+'|'+w+'|'+h,()=>new THREE.SphereGeometry(r,w,h));\nconst planeGeometry=(w,h)=>cachedGeometry('plane:'+w+'|'+h,()=>new THREE.PlaneGeometry(w,h));","cache duplicate materials and geometries");
+  replaceOnce("function disposeDynamicTree(root){if(!root)return;root.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){if(m.map)m.map.dispose();m.dispose()}}})}","function disposeDynamicTree(root){if(!root)return;const disposedTextures=new Set();root.traverse(o=>{if(o.geometry&&!sharedGeometries.has(o.geometry))o.geometry.dispose();if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){if(sharedMaterials.has(m))continue;if(m.map&&!disposedTextures.has(m.map)){disposedTextures.add(m.map);m.map.dispose()}m.dispose()}}})}","safe disposal with shared geometry");
+  replaceOnce("const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);","const o=new THREE.Mesh(boxGeometry(sx,sy,sz),material);","box geometry cache");
+  replaceOnce("const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,segments),material);","const o=new THREE.Mesh(cylinderGeometry(r1,r2,h,segments),material);","cylinder geometry cache");
+  replaceOnce("new THREE.SphereGeometry(.28,10,8)","sphereGeometry(.28,10,8)","cache repeated geometry");
+  replaceOnce("new THREE.SphereGeometry(.18,10,8)","sphereGeometry(.18,10,8)","cache repeated geometry");
+  replaceOnce("new THREE.SphereGeometry(.22,14,12)","sphereGeometry(.22,14,12)","cache repeated geometry");
+  replaceOnce("new THREE.SphereGeometry(.23,12,10)","sphereGeometry(.23,12,10)","cache repeated geometry");
+  replaceOnce("new THREE.SphereGeometry(.23,14,12)","sphereGeometry(.23,14,12)","cache repeated geometry");
+  replaceOnce("new THREE.SphereGeometry(.24,12,10)","sphereGeometry(.24,12,10)","cache repeated geometry");
+  replaceOnce("new THREE.SphereGeometry(.24,12,8)","sphereGeometry(.24,12,8)","cache repeated geometry");
+  replaceOnce("new THREE.PlaneGeometry(7.2,1.2)","planeGeometry(7.2,1.2)","cache repeated geometry");
+  replaceOnce("new THREE.PlaneGeometry(.82,.26)","planeGeometry(.82,.26)","cache repeated geometry");
+  replaceOnce("firstPersonArms.visible=false;","firstPersonArms.clear();armMeshes.length=0;\narmMaterials.sleeve=new THREE.MeshStandardMaterial({color:0x3e77a8,roughness:.82});armMaterials.skin=new THREE.MeshStandardMaterial({color:0xc58d68,roughness:.9});armMaterials.cuff=new THREE.MeshStandardMaterial({color:0x263544,roughness:.78});\nfor(const side of [-1,1]){const arm=new THREE.Group();arm.position.set(side*.39,-.16,-.76);arm.rotation.set(-.12,side*-.035,side*.14);const sleeve=new THREE.Mesh(cylinderGeometry(.088,.112,.43,9),armMaterials.sleeve);sleeve.position.set(0,.045,0);sleeve.castShadow=false;sleeve.receiveShadow=false;arm.add(sleeve);const cuff=new THREE.Mesh(cylinderGeometry(.091,.091,.065,9),armMaterials.cuff);cuff.position.set(0,-.205,-.005);cuff.castShadow=false;arm.add(cuff);const hand=new THREE.Group();hand.position.set(0,-.275,-.055);arm.add(hand);const palm=new THREE.Mesh(boxGeometry(.145,.095,.16),armMaterials.skin);palm.castShadow=false;hand.add(palm);for(let i=0;i<4;i++){const finger=new THREE.Mesh(boxGeometry(.029,.082,.045),armMaterials.skin);finger.position.set(-.052+i*.035,-.065,-.055);finger.castShadow=false;hand.add(finger)}const thumb=new THREE.Mesh(boxGeometry(.045,.075,.052),armMaterials.skin);thumb.position.set(side*.082,-.012,.005);thumb.rotation.z=side*-.48;thumb.castShadow=false;hand.add(thumb);firstPersonArms.add(arm);armMeshes.push({sleeve,hand})}\nfirstPersonArms.renderOrder=5;firstPersonArms.visible=true;","replace hidden arms with camera viewmodel");
+  replaceOnce("const raycaster=new THREE.Raycaster(); raycaster.far=5.2; const center=new THREE.Vector2(0,0);","const raycaster=new THREE.Raycaster();raycaster.far=5.2;raycaster.params.Line.threshold=.12;const center=new THREE.Vector2(0,0);let raycastTargets=[],lastRaycastRefresh=0;const moveDirection=new THREE.Vector3(),moveRight=new THREE.Vector3(),upDirection=new THREE.Vector3(0,1,0);","reusable raycast and movement vectors");
+  replaceOnce("function updateTarget(){if(stockingTask)","function updateTarget(){const rayNow=performance.now();if(rayNow-lastRaycastRefresh>650){raycastTargets=worldObjects.filter(o=>o.visible);lastRaycastRefresh=rayNow}if(stockingTask)","cache visible raycast objects");
+  replaceOnce("raycaster.intersectObjects(worldObjects.filter(o=>o.visible),true)","raycaster.intersectObjects(raycastTargets,true)","reuse raycast object list");
+  replaceOnce("const dir=new THREE.Vector3();camera.getWorldDirection(dir);dir.y=0;dir.normalize();const right=new THREE.Vector3().crossVectors(dir,new THREE.Vector3(0,1,0)).normalize();camera.position.addScaledVector(dir,f*speed*dt);camera.position.addScaledVector(right,s*speed*dt)","camera.getWorldDirection(moveDirection);moveDirection.y=0;moveDirection.normalize();moveRight.crossVectors(moveDirection,upDirection).normalize();camera.position.addScaledVector(moveDirection,f*speed*dt);camera.position.addScaledVector(moveRight,s*speed*dt)","reuse movement vectors");
+  replaceOnce("let lastT=performance.now(), elapsed=0, velocityY=0, onGround=true, keys={}, moveTouch={}; let gameStarted=false,gamePaused=false;let gameSettings={sensitivity:1,fov:74,quality:'low'}; let lastTargetCheck=0,lastHudUpdate=0,lastDeliveryUiUpdate=0,lastRenderAt=0;","let lastT=performance.now(),elapsed=0,velocityY=0,onGround=true,keys={},moveTouch={};let gameStarted=false,gamePaused=false;let gameSettings={sensitivity:1,fov:74,quality:'low'};let lastTargetCheck=0,lastHudUpdate=0,lastDeliveryUiUpdate=0,lastRenderAt=0,lastAdaptiveCheck=performance.now(),renderCostTotal=0,renderCostSamples=0,adaptiveScale=1;","adaptive renderer state");
+  replaceOnce("const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'}); renderer.setPixelRatio(Math.min(devicePixelRatio||1,1)); renderer.setSize(innerWidth,innerHeight); renderer.shadowMap.enabled=false; renderer.shadowMap.type=THREE.BasicShadowMap; renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05; $('game').appendChild(renderer.domElement);","const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance',stencil:false,depth:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,.85));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.shadowMap.type=THREE.BasicShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;$('game').appendChild(renderer.domElement);","lighter renderer defaults");
+  replaceOnce("glass:new THREE.MeshPhysicalMaterial({color:0xc8e7f4,roughness:.08,metalness:.05,transparent:true,opacity:.22})","glass:new THREE.MeshStandardMaterial({color:0xc8e7f4,roughness:.42,metalness:.02,transparent:true,opacity:.18,depthWrite:false})","lighter glass material");
+  replaceOnce("const rainCount=180;","const rainCount=72;","reduce rain particles");
+  replaceOnce("new THREE.CircleGeometry(.42+Math.random()*.35,24),new THREE.MeshPhysicalMaterial({color:0x7babc1,transparent:true,opacity:.38,roughness:.1})","new THREE.CircleGeometry(.42+Math.random()*.35,14),new THREE.MeshLambertMaterial({color:0x7babc1,transparent:true,opacity:.32,depthWrite:false})","lighter spill material");
+  replaceOnce("const quality=gameSettings.quality||'low';const ratio=quality==='low'?Math.min(devicePixelRatio||1,1):quality==='medium'?Math.min(devicePixelRatio||1,1.2):Math.min(devicePixelRatio||1,1.5);renderer.setPixelRatio(ratio);renderer.shadowMap.enabled=quality==='high';sun.castShadow=quality==='high';renderer.shadowMap.needsUpdate=true;renderer.setSize(innerWidth,innerHeight);lastRenderAt=0","const quality=gameSettings.quality||'low';const cap=quality==='low'?.85:quality==='medium'?1:1.25;const mobile=matchMedia('(max-width: 700px)').matches;const ratio=Math.min(devicePixelRatio||1,cap)*(mobile?.9:1)*adaptiveScale;renderer.setPixelRatio(Math.max(.6,ratio));renderer.shadowMap.enabled=quality==='high';sun.castShadow=quality==='high';renderer.shadowMap.needsUpdate=true;renderer.setSize(innerWidth,innerHeight);lastRenderAt=0","adaptive graphics settings");
+  replaceOnce("if(key==='quality'&&['low','medium','high'].includes(value))gameSettings.quality=value;applySettings();","if(key==='quality'&&['low','medium','high'].includes(value)){gameSettings.quality=value;adaptiveScale=1}applySettings();","reset adaptive quality when changed");
+  replaceOnce("backdrop-filter:blur(9px)","backdrop-filter:none","remove expensive full-screen menu blur");
+  replaceOnce("function spawnCustomer(){if(!storeOpen||customers.length>=8)return;","function spawnCustomer(){const maxCustomers=gameSettings.quality==='low'?5:gameSettings.quality==='medium'?7:9;if(!storeOpen||customers.length>=maxCustomers)return;","quality scaled customer cap");
+  replaceOnce("if($('panel').classList.contains('hidden')&&now-lastTargetCheck>110)","if($('panel').classList.contains('hidden')&&now-lastTargetCheck>160)","throttle target polling");
+  replaceOnce("function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-lastT)/1000);lastT=now;","function animate(now){requestAnimationFrame(animate);if(document.hidden){lastT=now;return}const dt=Math.min(.05,(now-lastT)/1000);lastT=now;","skip hidden tab rendering");
+  replaceOnce("const frameGap=!gameStarted||gamePaused?1000/15:gameSettings.quality==='low'?1000/45:1000/60;if(now-lastRenderAt>=frameGap){renderer.render(scene,camera);lastRenderAt=now}}","const frameGap=!gameStarted||gamePaused?1000/12:gameSettings.quality==='low'?1000/30:gameSettings.quality==='medium'?1000/45:1000/60;if(now-lastRenderAt>=frameGap){const renderStart=performance.now();renderer.render(scene,camera);renderCostTotal+=performance.now()-renderStart;renderCostSamples++;lastRenderAt=now}if(now-lastAdaptiveCheck>3000&&renderCostSamples){const average=renderCostTotal/renderCostSamples;let changed=false;if(average>24&&adaptiveScale>.62){adaptiveScale=Math.max(.62,adaptiveScale-.1);changed=true}else if(average<12&&adaptiveScale<1){adaptiveScale=Math.min(1,adaptiveScale+.04);changed=true}renderCostTotal=0;renderCostSamples=0;lastAdaptiveCheck=now;if(changed){const q=gameSettings.quality||'low',cap=q==='low'?.85:q==='medium'?1:1.25,mobile=matchMedia('(max-width: 700px)').matches;renderer.setPixelRatio(Math.max(.6,Math.min(devicePixelRatio||1,cap)*(mobile?.9:1)*adaptiveScale));lastRenderAt=0}}}","adaptive fps cap and render resolution");
+  replaceOnce("window.addEventListener('keydown',e=>{if(e.code==='Escape'&&gameStarted&&!gamePaused&&$('panel').classList.contains('hidden')){e.preventDefault();pauseGame()}if(e.code==='F1'&&gameStarted&&!gamePaused){e.preventDefault();openPanel('help')}});","window.addEventListener('keydown',e=>{if((e.code==='ControlLeft'||e.code==='ControlRight')&&gameStarted&&!gamePaused){e.preventDefault();controls.unlock();keys[e.code]=false;toast('Mouse unlocked · click the game to lock it again.')}if(e.code==='Escape'&&gameStarted&&!gamePaused&&$('panel').classList.contains('hidden')){e.preventDefault();pauseGame()}if(e.code==='F1'&&gameStarted&&!gamePaused){e.preventDefault();openPanel('help')}});","CTRL unlock mouse");
+  replaceOnce("<b>Controls:</b> WASD move · Mouse look · Space jump · Shift sprint · E interact · B build · P phone · Esc pause.","<b>Controls:</b> WASD move · Mouse look · CTRL unlock mouse · click game to lock · Space jump · Shift sprint · E interact · B build · P phone · Esc pause.","controls help text");
+  replaceOnce("FINAL RELEASE · STAGE 10 / 10","PERFORMANCE UPDATE · STAGE 11","version label");
+  replaceOnce("Low · 45 FPS, no shadows (recommended)","Low · 30 FPS, adaptive resolution (recommended)","low preset label");
+  replaceOnce("Medium · 60 FPS, no shadows","Medium · 45 FPS, no shadows","medium preset label");
   document.open();document.write(html);document.close();
- }catch(error){
-  status.textContent='The game could not start: '+(error&&error.message?error.message:String(error));
-  status.style.color='#ffb4a9';
- }
+ }catch(error){status.textContent='The game could not start: '+(error&&error.message?error.message:String(error));status.style.color='#ffb4a9'}
 })();
 </script>
 </body>
