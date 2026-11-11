@@ -75,6 +75,101 @@ h1{margin:0 0 12px;font-size:clamp(26px,6vw,38px)}p{color:#c5d0d7;line-height:1.
     replaceOnce("click game to relock · Space jump","click game to relock · PHONE button / P to open phone · Space jump","Stage 12 help controls");
     replaceOnce("PERFORMANCE UPDATE · STAGE 11","INTERFACE REDESIGN · STAGE 12","Stage 12 title version");
   }
+
+  if(!html.includes('STAGE 13 · BUILDING SYSTEM 2.0')){
+    const dockMarkup = '<div id="buildDock" class="build-dock hidden" aria-label="Furniture placement controls"><div class="build-dock-top"><strong>PLACEMENT TOOLS</strong><span id="buildValidity">AIM AT THE FLOOR</span></div><div class="build-dock-buttons"><button id="rotateLeftBtn" type="button">↶ 15°</button><button id="rotateRightBtn" type="button">↷ 15°</button><button id="rotateQuarterBtn" type="button">ROTATE 90°</button><button id="snapStepBtn" type="button">GRID 0.5m</button><button id="cancelBuildBtn" type="button" class="dock-cancel">CANCEL</button></div><div class="build-dock-help">Q / E rotate · R quarter-turn · V grid / free · click floor to place</div></div>\n  <div class="toolbar">';
+    replaceOnce('<div class="toolbar">',dockMarkup,'Stage 13 placement dock');
+    const buildCss = String.raw`
+/* STAGE 13 · BUILDING SYSTEM 2.0 */
+.build-dock{position:absolute;right:16px;bottom:88px;z-index:6;pointer-events:auto;width:min(430px,calc(100% - 32px));padding:12px;border:1px solid #4b6b89;border-radius:15px;background:linear-gradient(150deg,rgba(17,40,62,.97),rgba(9,23,39,.97));box-shadow:0 16px 42px rgba(0,0,0,.42);color:#edf6ff}
+.build-dock.hidden{display:none}.build-dock-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.build-dock-top strong{font-size:10px;letter-spacing:.16em;color:#8ac8fa}.build-dock-top span{font-size:10px;font-weight:900;letter-spacing:.08em;color:#77d6a8}.build-dock-top span.invalid{color:#ff9791}
+.build-dock-buttons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.build-dock-buttons button{min-width:0;padding:9px 5px;border:1px solid #3a5875;border-radius:9px;background:#1b3651;color:#e7f3ff;font-size:10px;font-weight:850;white-space:nowrap}
+.build-dock-buttons button:hover{background:#285174;border-color:#70b6ed}.build-dock-buttons .dock-cancel{background:#603b46;border-color:#986070;color:#ffe9ed}
+.build-dock-help{margin-top:8px;color:#a9bfd4;font-size:10px;line-height:1.4}
+.panel .build-guide{margin:12px 0;padding:12px;border:1px solid #3b5975;border-radius:12px;background:#112941;color:#d5e7f8;font-size:11px;line-height:1.55}
+.panel .build-guide strong{color:#f2f8ff}.panel .build-guide kbd{display:inline-block;padding:2px 5px;border:1px solid #496987;border-radius:5px;background:#1b3854;color:#fff;font:inherit;font-weight:900}
+.panel .placement-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.panel .placement-actions button{flex:1;min-width:120px}
+.panel .build-selected{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:11px;background:#18334d;border:1px solid #3c5d7a;color:#eef6fd}
+.panel .build-selected small{display:block;margin-top:3px;color:#a7bfd4}
+@media(max-width:700px){.build-dock{left:8px;right:8px;bottom:66px;width:auto;padding:9px}.build-dock-buttons{gap:4px}.build-dock-buttons button{font-size:9px;padding:9px 3px}.build-dock-help{font-size:9px}.hint{bottom:130px}}
+@media(max-width:430px){.build-dock-buttons{grid-template-columns:repeat(3,minmax(0,1fr))}}
+`;
+    replaceOnce('</style>',buildCss+'\n</style>','Stage 13 placement styling');
+    replaceOnce("const worldObjects=[]; const customers=[]; const dirt=[]; const stockBoxes=[]; let buildMode=false, selectedBuild='shelf', snapMode=true, ghost=null, rotation=0, heldBox=null, activeTarget=null, toastTimer=0, cash=2500, reputation=3, storeMinute=390, storeOpen=false, customerSerial=0, lastCustomerSpawn=0, lastDirt=0, thiefActive=false, deliveries=[], stock={bread:0,milk:0,apples:0,drinks:0,chips:0,eggs:0,cereal:0,cheese:0,juice:0,tomatoes:0};",
+      "const worldObjects=[]; const customers=[]; const dirt=[]; const stockBoxes=[]; let buildMode=false, selectedBuild='shelf', snapMode=true, snapStepIndex=1, ghost=null, ghostMarker=null, ghostValidLast=null, rotation=0, heldBox=null, activeTarget=null, toastTimer=0, cash=2500, reputation=3, storeMinute=390, storeOpen=false, customerSerial=0, lastCustomerSpawn=0, lastDirt=0, thiefActive=false, deliveries=[], stock={bread:0,milk:0,apples:0,drinks:0,chips:0,eggs:0,cereal:0,cheese:0,juice:0,tomatoes:0};\nconst SNAP_STEPS=[.25,.5,1];\nconst buildMarkerMaterial=new THREE.MeshBasicMaterial({color:0x48d99a,transparent:true,opacity:.92,depthWrite:false});",
+      'Stage 13 build state and grid settings');
+    replaceOnce("const MERCH_FIXTURES=['shelf','fridge','bakery','butcher','flower','toy','electronics'];",
+      "const MERCH_FIXTURES=['shelf','fridge','bakery','butcher','flower','toy','electronics'];\nconst BUILD_BLOCKER_KINDS=new Set([...MERCH_FIXTURES,'checkout','plant','storageRack','computer','elevator']);",
+      'Stage 13 placement blockers');
+    const buildStart=html.indexOf('function makeGhost(){');
+    const buildEnd=html.indexOf('\n\nfunction createStaffMesh(role)',buildStart);
+    if(buildStart<0||buildEnd<0)throw new Error('Stage 13 build placement block not found.');
+    const newBuildBlock = [
+"function fixtureSize(kind){return ({shelf:[2.35,.98],fridge:[2.4,1.05],checkout:[3.05,1.45],plant:[.9,.9],storageRack:[2.15,1.05],bakery:[2.55,1.25],butcher:[2.55,1.3],flower:[2.35,1.15],toy:[2.35,.98],electronics:[2.55,1.3],computer:[2.4,1.35],elevator:[2.35,2.35]})[kind]||[1,1]}",
+"function footprint(kind,rot=0){const [w,d]=fixtureSize(kind),c=Math.abs(Math.cos(rot)),si=Math.abs(Math.sin(rot));return {w:w*c+d*si,d:w*si+d*c}}",
+"function rotatedRectOverlaps(x,z,a,rotA,o,b,pad=.13){const cA=Math.cos(rotA),sA=Math.sin(rotA),cB=Math.cos(o.rotation?.y||0),sB=Math.sin(o.rotation?.y||0),axes=[[cA,-sA],[sA,cA],[cB,-sB],[sB,cB]],dx=o.position.x-x,dz=o.position.z-z;for(const axis of axes){const distance=Math.abs(dx*axis[0]+dz*axis[1]);const radiusA=(a[0]/2+pad)*Math.abs(cA*axis[0]-sA*axis[1])+(a[1]/2+pad)*Math.abs(sA*axis[0]+cA*axis[1]);const radiusB=(b[0]/2+pad)*Math.abs(cB*axis[0]-sB*axis[1])+(b[1]/2+pad)*Math.abs(sB*axis[0]+cB*axis[1]);if(distance>=radiusA+radiusB)return false}return true}",
+"function canPlace(x,z,kind=selectedBuild,rot=rotation){const size=fixtureSize(kind),a=footprint(kind,rot),upper=activeFloorY>0.1,minX=-11.8,maxX=(!upper&&expansions.sideWing)?23.8:11.8,minZ=(!upper&&expansions.rearWing)?-20.6:-8.6,maxZ=8.4;if(x-a.w/2<minX||x+a.w/2>maxX||z-a.d/2<minZ||z+a.d/2>maxZ)return false;if(!upper&&z+a.d/2>7.25&&Math.abs(x)<1.8+a.w/2)return false;for(const o of worldObjects){if(!o.visible||!BUILD_BLOCKER_KINDS.has(o.userData.kind)||Math.abs((o.position.y||0)-activeFloorY)>.15)continue;if(rotatedRectOverlaps(x,z,size,rot,o,fixtureSize(o.userData.kind),.16))return false}return true}",
+"function clearGhost(){if(ghost){scene.remove(ghost);disposeDynamicTree(ghost);ghost=null}if(ghostMarker){scene.remove(ghostMarker);ghostMarker=null}ghostValidLast=null}",
+"function updateBuildDock(){const dock=$('buildDock');if(!dock)return;const visible=buildMode&&!gamePaused&&$('panel').classList.contains('hidden');dock.classList.toggle('hidden',!visible);const snap=$('snapStepBtn');if(snap)snap.textContent=snapMode?'GRID '+SNAP_STEPS[snapStepIndex]+'m':'FREE PLACE';const valid=$('buildValidity');if(valid){const ok=!!ghost?.userData.valid;valid.textContent=ghost?.userData.hasAim?(ok?'VALID POSITION':'BLOCKED · NO ROOM'):'AIM AT THE FLOOR';valid.classList.toggle('invalid',!!ghost?.userData.hasAim&&!ok)}}",
+"function makeGhost(){clearGhost();ghost=createShelf(0,activeFloorY,0,0,selectedBuild);const ghostIndex=worldObjects.indexOf(ghost);if(ghostIndex>=0)worldObjects.splice(ghostIndex,1);ghost.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.transparent=true;o.material.opacity=.42;o.material.depthWrite=false;o.material.roughness=.9;o.castShadow=false;o.receiveShadow=false}});ghost.userData.ghost=true;const [w,d]=fixtureSize(selectedBuild);ghostMarker=new THREE.Group();const bars=[[0,.025,-d/2,w,.035,.055],[0,.025,d/2,w,.035,.055],[-w/2,.025,0,.055,.035,d],[w/2,.025,0,.055,.035,d]];for(const [x,y,z,sx,sy,sz] of bars){const bar=new THREE.Mesh(boxGeometry(sx,sy,sz),buildMarkerMaterial);bar.position.set(x,y,z);bar.renderOrder=4;ghostMarker.add(bar)}scene.add(ghostMarker);ghostMarker.visible=false;updateBuildDock()}",
+"function setBuildMode(v){buildMode=!!v;if(buildMode){makeGhost();openPanel('build')}else{clearGhost();closePanel()}$('buildBtn').classList.toggle('active',buildMode);updateBuildDock()}",
+"function groundPoint(){raycaster.setFromCamera(center,camera);const plane=new THREE.Plane(new THREE.Vector3(0,1,0),-activeFloorY),p=new THREE.Vector3();return raycaster.ray.intersectPlane(plane,p)?p:null}",
+"function snapCoordinate(value){const step=SNAP_STEPS[snapStepIndex]||.5;return Math.round(value/step)*step}",
+"function setBuildRotation(next){rotation=((next%(Math.PI*2))+Math.PI*2)%(Math.PI*2);if(ghost){ghost.rotation.y=rotation;updateGhost()}updateBuildDock()}",
+"function updateGhost(){if(!ghost||!buildMode)return;const p=groundPoint();if(!p){ghost.userData.hasAim=false;if(ghostMarker)ghostMarker.visible=false;updateBuildDock();return}let x=p.x,z=p.z;if(snapMode){x=snapCoordinate(x);z=snapCoordinate(z)}ghost.position.set(x,activeFloorY,z);ghost.rotation.y=rotation;if(ghostMarker){ghostMarker.position.set(x,activeFloorY+.035,z);ghostMarker.rotation.y=rotation;ghostMarker.visible=true}const ok=canPlace(x,z,selectedBuild,rotation);ghost.userData.valid=ok;ghost.userData.hasAim=true;if(ghostValidLast!==ok){const color=ok?0x8de7b5:0xf08079;ghost.traverse(o=>{if(o.isMesh){o.material.color.setHex(color);o.material.opacity=ok?.43:.52}});buildMarkerMaterial.color.setHex(ok?0x42e39a:0xff7770);ghostValidLast=ok}updateBuildDock()}",
+"function placeObject(){if(!ghost)return;const def=availableBuild[selectedBuild];if(!def||storeLevel<(def.unlock||1)){toast('This department is still locked.');return}const cost=def.cost;if(cash<cost){toast('Not enough money · this fixture costs 
+ }catch(error){status.textContent='The game could not start: '+(error&&error.message?error.message:String(error));status.style.color='#ffb4a9'}
+})();
+</script>
+</body>
+</html>+cost+'.');return}const x=ghost.position.x,z=ghost.position.z;if(!ghost.userData.hasAim||!ghost.userData.valid||!canPlace(x,z,selectedBuild,rotation)){toast('Cannot place here. Move the preview to a clear green position.');return}cash-=cost;dailyStats.expenses+=cost;const kind=selectedBuild;createShelf(x,activeFloorY,z,rotation,kind);updateHud();toast(availableBuild[kind].name+' placed · 
+ }catch(error){status.textContent='The game could not start: '+(error&&error.message?error.message:String(error));status.style.color='#ffb4a9'}
+})();
+</script>
+</body>
+</html>+cost+'. Keep building or press CANCEL.');saveGame(false);updateGhost()}"
+    ].join("\n");
+    html=html.slice(0,buildStart)+newBuildBlock+html.slice(buildEnd);
+    replaceOnce("function closePanel(){$('panel').classList.add('hidden');$('panel').classList.remove('building');manualCheckoutCustomer=null;if(panelWasRunning&&gameStarted){gamePaused=false;panelWasRunning=false}}",
+      "function closePanel(){$('panel').classList.add('hidden');$('panel').classList.remove('building');manualCheckoutCustomer=null;if(panelWasRunning&&gameStarted){gamePaused=false;panelWasRunning=false}updateBuildDock()}",
+      'Stage 13 show build controls after closing menu');
+    replaceOnce("function openPanel(which){pauseWorldForPanel();controls.unlock();const panel=$('panel');panel.classList.remove('hidden');panel.classList.toggle('building',which==='build');if(which==='hub')",
+      "function openPanel(which){pauseWorldForPanel();controls.unlock();const panel=$('panel');panel.classList.remove('hidden');panel.classList.toggle('building',which==='build');updateBuildDock();if(which==='hub')",
+      'Stage 13 hide dock under other menus');
+    replaceOnce("window.chooseBuild=k=>{if(!availableBuild[k])return;if(storeLevel<(availableBuild[k].unlock||1)){toast(`${availableBuild[k].name} unlocks at store level ${availableBuild[k].unlock}.`);return}selectedBuild=k;if(ghost){scene.remove(ghost);disposeDynamicTree(ghost);ghost=null}makeGhost();closePanel();toast(`${availableBuild[k].name} selected. Aim at the floor and click to place.`)};\nwindow.toggleSnap=()=>{snapMode=!snapMode;const el=$('snapText');if(el)el.textContent=snapMode?'Grid snapping':'Free placement'};",
+      "window.chooseBuild=k=>{if(!availableBuild[k])return;if(storeLevel<(availableBuild[k].unlock||1)){toast(availableBuild[k].name+' unlocks at store level '+availableBuild[k].unlock+'.');return}selectedBuild=k;makeGhost();closePanel();updateBuildDock();toast(availableBuild[k].name+' selected · 
+ }catch(error){status.textContent='The game could not start: '+(error&&error.message?error.message:String(error));status.style.color='#ffb4a9'}
+})();
+</script>
+</body>
+</html>+availableBuild[k].cost+'. Aim at the floor; green means valid.')};\nwindow.toggleSnap=()=>{snapMode=!snapMode;const el=$('snapText');if(el)el.textContent=snapMode?'Grid snapping':'Free placement';updateBuildDock();if(ghost)updateGhost()};\nwindow.cycleBuildGrid=()=>{snapStepIndex=(snapStepIndex+1)%SNAP_STEPS.length;snapMode=true;const el=$('snapText');if(el)el.textContent='Grid snapping · '+SNAP_STEPS[snapStepIndex]+'m';updateBuildDock();if(ghost)updateGhost()};\nwindow.rotateBuild=delta=>setBuildRotation(rotation+delta);",
+      'Stage 13 grid and rotation controls');
+    replaceOnce("if(buildMode)txt=`Placing: ${availableBuild[selectedBuild].name} · click to place · R rotate · V snap/free`;",
+      "if(buildMode)txt='Placing: '+availableBuild[selectedBuild].name+' · 
+ }catch(error){status.textContent='The game could not start: '+(error&&error.message?error.message:String(error));status.style.color='#ffb4a9'}
+})();
+</script>
+</body>
+</html>+availableBuild[selectedBuild].cost+' · Q/E fine rotate · R 90° · V grid/free';",
+      'Stage 13 placement help text');
+    replaceOnce("if(buildMode)updateGhost();if(now-lastTargetCheck>160){updateTarget();lastTargetCheck=now}",
+      "if(buildMode&&now-lastGhostCheck>65){updateGhost();lastGhostCheck=now}if(now-lastTargetCheck>160){updateTarget();lastTargetCheck=now}",
+      'Stage 13 smooth preview refresh');
+    replaceOnce("let lastTargetCheck=0,lastHudUpdate=0,lastDeliveryUiUpdate=0,lastRenderAt=0,lastAdaptiveCheck=performance.now()",
+      "let lastTargetCheck=0,lastGhostCheck=0,lastHudUpdate=0,lastDeliveryUiUpdate=0,lastRenderAt=0,lastAdaptiveCheck=performance.now()",
+      'Stage 13 preview refresh timer');
+    replaceOnce("window.addEventListener('keydown',e=>{if(!gameStarted||gamePaused||!$('panel').classList.contains('hidden'))return;keys[e.code]=true;if(e.code==='KeyE'&&!e.repeat&&!buildMode&&$('panel').classList.contains('hidden'))interact();if(e.code==='KeyB'&&!e.repeat&&$('panel').classList.contains('hidden'))setBuildMode(!buildMode);if(e.code==='KeyP'&&!e.repeat&&$('panel').classList.contains('hidden')){setBuildMode(false);openPanel('phone')}if(e.code==='KeyR'&&buildMode)rotation+=Math.PI/2;if(e.code==='KeyV'&&buildMode)window.toggleSnap();if(e.code==='Space'&&onGround){velocityY=5.3;onGround=false}});window.addEventListener('keyup',e=>keys[e.code]=false);",
+      "window.addEventListener('keydown',e=>{if(!gameStarted||gamePaused||!$('panel').classList.contains('hidden'))return;keys[e.code]=true;if(buildMode&&(e.code==='KeyQ'||e.code==='KeyE')){e.preventDefault();setBuildRotation(rotation+(e.code==='KeyQ'?-1:1)*Math.PI/12);return}if(e.code==='KeyE'&&!e.repeat&&!buildMode&&$('panel').classList.contains('hidden'))interact();if(e.code==='KeyB'&&!e.repeat&&$('panel').classList.contains('hidden'))setBuildMode(!buildMode);if(e.code==='KeyP'&&!e.repeat&&$('panel').classList.contains('hidden')){setBuildMode(false);openPanel('phone')}if(e.code==='KeyR'&&buildMode){e.preventDefault();setBuildRotation(rotation+Math.PI/2)}if(e.code==='KeyV'&&buildMode)window.toggleSnap();if(e.code==='Space'&&onGround){velocityY=5.3;onGround=false}});window.addEventListener('keyup',e=>keys[e.code]=false);",
+      'Stage 13 keyboard rotation');
+    replaceOnce("$('gameMenuBtn').onclick=()=>{setBuildMode(false);openPanel('hub')};$('interactBtn').onclick=()=>{if(!gameStarted||gamePaused)return;if(!$('panel').classList.contains('hidden'))return;interact()};$('buildBtn').onclick=()=>{if(buildMode)openPanel('build');else setBuildMode(true)};",
+      "$('gameMenuBtn').onclick=()=>{setBuildMode(false);openPanel('hub')};$('interactBtn').onclick=()=>{if(!gameStarted||gamePaused)return;if(!$('panel').classList.contains('hidden'))return;interact()};$('buildBtn').onclick=()=>{if(buildMode)openPanel('build');else setBuildMode(true)};$('rotateLeftBtn').onclick=()=>setBuildRotation(rotation-Math.PI/12);$('rotateRightBtn').onclick=()=>setBuildRotation(rotation+Math.PI/12);$('rotateQuarterBtn').onclick=()=>setBuildRotation(rotation+Math.PI/2);$('snapStepBtn').onclick=()=>{if(!snapMode)window.toggleSnap();else window.cycleBuildGrid()};$('cancelBuildBtn').onclick=()=>setBuildMode(false);",
+      'Stage 13 placement dock actions');
+    replaceOnce('R rotates · V switches grid/free placement.','Q/E rotate 15° · R rotates 90° · V toggles grid/free placement.',
+      'Stage 13 build menu instructions');
+    replaceOnce('PERFORMANCE UPDATE · STAGE 11','BUILDING SYSTEM 2.0 · STAGE 13','Stage 13 release label');
+  }
+
   document.open();document.write(html);document.close();
  }catch(error){status.textContent='The game could not start: '+(error&&error.message?error.message:String(error));status.style.color='#ffb4a9'}
 })();
