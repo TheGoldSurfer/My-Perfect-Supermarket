@@ -54,6 +54,24 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 - Exposes `window.MPSInventory` with `getProducts()`, `getStock()`, `getDeliveries()`, `adjustStock()`, `setStock()`, `createOrder()`, `receiveDelivery()` and `subscribe()`. Changes emit `mps:inventory:changed`.
 - The original game source is now kept in `game-source.html`; the 16 compressed parts remain as a rollback copy.
 
+## Stage 15 — Final polish and release checks (in progress)
+
+- Adds a dependency-free Node.js quality check for the launcher, Three.js game module and embedded Stock & Ordering script.
+- Verifies the game's import map, live game/inventory bridge, public inventory API, exact 22-product catalogue and duplicate IDs in the page markup.
+- Adds a GitHub Actions quality workflow that runs the checks on pushes to `main`, pull requests targeting `main` and manual workflow dispatch.
+- Improves the startup screen and adds a retry control when the game source fails to load.
+- A real browser play-through and device-specific checks are still required before calling the final release verified.
+
+### Manual release smoke test
+
+1. Start a new game and confirm the 3D scene, HUD and pointer-lock controls load.
+2. Walk, jump, sprint and interact; open and close the phone, dashboard, pause menu and settings.
+3. Enter build mode, rotate a fixture, check its placement preview and place it.
+4. Open Stock & Ordering, review stock, place an unlocked order and confirm the delivery appears.
+5. Receive the delivery, pick up its crate, stock a compatible shelf and confirm the stock overview updates.
+6. Save, reload the page and confirm cash, stock, shelf contents, fixtures and active deliveries persist.
+7. Repeat the essential controls and management screens at a narrow mobile viewport.
+
 ## Controls
 
 - WASD: walk; mouse: look; Space: jump; Shift: sprint.
@@ -81,5 +99,5 @@ The root `index.html` loads the standalone `game-source.html` game build and add
 - ShopTune is not connected to Spotify's catalogue.
 - Saves are local to the same browser and device unless exported and imported as a JSON backup.
 - The 3D engine loads from jsDelivr, so an internet connection is required when the game starts.
-- JavaScript syntax, HTML parsing, duplicate-ID and ZIP integrity checks passed for Stage 13.
-- Stage 14 launcher, embedded management desk script and game module pass static JavaScript syntax checks. Live gameplay testing still needs to be performed on the target device.
+- The Stage 15 quality workflow checks JavaScript syntax, the import map, inventory integration contracts, the 22-product catalogue and duplicate IDs. These are static checks, not a substitute for a browser play-through.
+- Live gameplay, WebGL/CDN loading, pointer lock, mobile controls and full save/load behavior still need manual verification on target devices.
