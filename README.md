@@ -80,3 +80,5 @@ The root `index.html` loads 16 compressed game source parts, unpacks the complet
 - Saves are local to the same browser and device unless exported and imported as a JSON backup.
 - The 3D engine loads from jsDelivr, so an internet connection is required when the game starts.
 - JavaScript syntax, HTML parsing, duplicate-ID and ZIP integrity checks passed for Stage 13. Live gameplay testing still needs to be performed on the target device.
+
+<!-- source reconstruction workflow trigger -->
