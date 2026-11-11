@@ -50,5 +50,6 @@ requireMatch(launcher, /prior&&Number\.isFinite\(Number\(prior\.min\)\)\?Number\
 requireMatch(game, /function ensureDeliveryId\(delivery\)/, 'Supplier delivery IDs use a collision-safe allocator');
 requireMatch(game, /deliveries\.push\(delivery\);ensureDeliveryId\(delivery\)/, 'New supplier orders receive unique delivery IDs');
 requireMatch(game, /deliveries\.forEach\(ensureDeliveryId\)/, 'Loaded or legacy deliveries are repaired to unique IDs before display');
+requireMatch(game, /function clearRackVisuals\(rack\)\{for\(const child of \[\.\.\.rack\.children\]\)if\(child\.userData\.rackVisual\)\{rack\.remove\(child\);disposeDynamicTree\(child\)\}\}/, 'Warehouse rack refreshes use shared-resource-safe cleanup');
 
 console.log('All Stage 16 stability and performance guard checks passed.');
