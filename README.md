@@ -10,7 +10,7 @@ A first-person 3D supermarket simulator where you build your own shop from scrat
 4. After GitHub Pages publishes the site, open:
    https://thegoldsurfer.github.io/My-Perfect-Supermarket/
 
-The root `index.html` loads 16 compressed game source parts, unpacks the complete game in your browser, and adds the Stage 14 Stock & Ordering management desk. Use a modern browser with JavaScript and gzip decompression support. The game also loads Three.js from a CDN, so an internet connection is required.
+The root `index.html` loads the standalone `game-source.html` game build and adds the Stage 14 Stock & Ordering management desk. The original compressed source parts are retained in the repository as a rollback copy. Use a modern browser with JavaScript. The game loads Three.js from a CDN, so an internet connection is required.
 
 ## Stage 11 — Performance and controls
 
@@ -40,17 +40,19 @@ The root `index.html` loads 16 compressed game source parts, unpacks the complet
 - Existing furniture positions and rotations remain compatible with saved games.
 
 
-## Stage 14 — Product Ordering and Inventory 2.0
+## Stage 14 — Live Stock, Ordering and Warehouse Management
 
 - Adds a Stock & Ordering desk accessible from the game screen.
-- Stock overview tracks product quantities and per-product replenishment thresholds.
-- Place supplier orders with configurable quantities and track incoming deliveries.
-- Receive deliveries to add their units to the inventory desk's stock records.
-- Shelf compatibility screen compares each product's required fixture type with its assigned fixture and flags mismatches.
-- Inventory desk records persist in the browser using local storage.
-- Adds manual stock increases/decreases and product creation, plus JSON export/import backups.
-- Exposes `window.MPSInventory` and the `mps:inventory:changed` event as a stable integration API for game systems. Game code can read quantities and report sales/restocks through `getProducts()`, `getStock()`, `adjustStock()`, and `setStock()`.
-- The existing 3D shelves and original customer stock simulation are not yet wired to this API; automatic in-game synchronisation still requires changes to the original game code.
+- Uses the game's real 21-product catalogue, product unlocks, supplier prices and cash balance.
+- Live stock overview separates warehouse quantities from units currently on shelves and shows reorder thresholds.
+- Supplier orders create real in-game deliveries; receiving early or waiting for arrival creates physical crates at the loading bay.
+- Crates can be picked up, stocked onto compatible fixtures or stored in warehouse racks using the existing 3D gameplay.
+- Shelf compatibility reads the actual fixtures built in the store, their assigned products, current quantities and capacities.
+- Manual stock adjustments update the real warehouse and shelf inventory; additions create physical delivery crates.
+- Delivery orders, warehouse quantities, shelf contents and store progress are saved in the game save.
+- Reorder thresholds are stored locally. Inventory snapshots can be exported to or imported from JSON.
+- Exposes `window.MPSInventory` with `getProducts()`, `getStock()`, `getDeliveries()`, `adjustStock()`, `setStock()`, `createOrder()`, `receiveDelivery()` and `subscribe()`. Changes emit `mps:inventory:changed`.
+- The original game source is now kept in `game-source.html`; the 16 compressed parts remain as a rollback copy.
 
 ## Controls
 
@@ -80,5 +82,3 @@ The root `index.html` loads 16 compressed game source parts, unpacks the complet
 - Saves are local to the same browser and device unless exported and imported as a JSON backup.
 - The 3D engine loads from jsDelivr, so an internet connection is required when the game starts.
 - JavaScript syntax, HTML parsing, duplicate-ID and ZIP integrity checks passed for Stage 13. Live gameplay testing still needs to be performed on the target device.
-
-<!-- source reconstruction workflow trigger -->
